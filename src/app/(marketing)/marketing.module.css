@@ -1,0 +1,15 @@
+.wrap { max-width: 980px; margin: 0 auto; padding: var(--space-6); }
+.nav { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4) 0; }
+.brand { font-weight: 700; font-size: 18px; }
+.hero { text-align: center; padding: var(--space-8) 0; }
+.h1 { font-size: clamp(32px, 6vw, 56px); margin: 0 0 var(--space-4); }
+.lead { color: var(--color-text-muted); max-width: 620px; margin: 0 auto var(--space-6); font-size: 18px; }
+.cta { display: inline-block; background: var(--color-accent); color: #fff; text-decoration: none;
+  border-radius: var(--radius-md); padding: var(--space-3) var(--space-6); }
+.cta:hover { background: var(--color-accent-strong); }
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-6); margin: var(--space-8) 0; }
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  padding: var(--space-6); box-shadow: var(--shadow-card); }
+.card h3 { margin: 0 0 var(--space-2); }
+.card p { margin: 0; color: var(--color-text-muted); }
+.footer { text-align: center; color: var(--color-text-muted); padding: var(--space-8) 0; font-size: 14px; }
