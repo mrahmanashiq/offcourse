@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CourseTree, Lesson } from "@/lib/course/types";
 import { loadHandle, ensureReadPermission, saveHandle } from "@/lib/fs/handleStore";
@@ -26,10 +27,20 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
   const [autoplay, setAutoplay] = useState(false);
 
   const flat = useMemo(() => tree.modules.flatMap((m) => m.lessons), [tree]);
-  // "Continue learning": start on the first lesson that isn't completed yet.
-  const [active, setActive] = useState<Lesson | null>(
-    () => flat.find((l) => !initialProgress[l.key]?.completed) ?? flat[0] ?? null,
-  );
+  const requestedKey = useSearchParams().get("lesson");
+  // Open the requested lesson (e.g. from search), else "continue learning" —
+  // the first lesson that isn't completed yet.
+  const [active, setActive] = useState<Lesson | null>(() => {
+    const requested = requestedKey ? flat.find((l) => l.key === requestedKey) : undefined;
+    return requested ?? flat.find((l) => !initialProgress[l.key]?.completed) ?? flat[0] ?? null;
+  });
+
+  // React to the ?lesson= param changing (searching within the current course).
+  useEffect(() => {
+    if (!requestedKey) return;
+    const f = flat.find((l) => l.key === requestedKey);
+    if (f) setActive(f);
+  }, [requestedKey, flat]);
 
   useEffect(() => {
     (async () => {
