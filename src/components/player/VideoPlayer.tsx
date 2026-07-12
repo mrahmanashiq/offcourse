@@ -53,6 +53,19 @@ export function VideoPlayer({ src, startAt, onSaveProgress, onComplete }: {
       aspectRatio="16/9"
       crossOrigin=""
       playsInline
+      keyShortcuts={{
+        togglePaused: "k Space",
+        toggleMuted: "m",
+        toggleFullscreen: "f",
+        togglePictureInPicture: "i",
+        toggleCaptions: "c",
+        seekBackward: "j ArrowLeft",
+        seekForward: "l ArrowRight",
+        volumeUp: "ArrowUp",
+        volumeDown: "ArrowDown",
+        speedUp: ["+", "="],
+        slowDown: "-",
+      }}
       onCanPlay={onCanPlay}
       onTimeUpdate={onTimeUpdate}
       onEnded={onComplete}
