@@ -6,7 +6,7 @@ import { saveHandle as persistHandle } from "@/lib/fs/handleStore";
 import { parseCourse } from "@/lib/course/parse";
 import { captureThumbnail } from "@/lib/thumbnail";
 import { upsertCourse } from "@/server/courses";
-import styles from "./library.module.css";
+import { Button } from "@/components/ui/button";
 
 export function AddCourseButton() {
   const router = useRouter();
@@ -27,5 +27,9 @@ export function AddCourseButton() {
       if ((e as Error).name !== "AbortError") alert("Could not open folder: " + (e as Error).message);
     } finally { setBusy(false); }
   }
-  return <button className={styles.add} onClick={onAdd} disabled={busy}>{busy ? "Reading…" : "Add course"}</button>;
+  return (
+    <Button onClick={onAdd} disabled={busy}>
+      {busy ? "Reading…" : "Add course"}
+    </Button>
+  );
 }
