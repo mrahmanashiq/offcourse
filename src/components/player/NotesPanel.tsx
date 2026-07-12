@@ -5,7 +5,10 @@ import remarkGfm from "remark-gfm";
 import { getNote, saveNote } from "@/server/notes";
 import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
 import { formatTimestamp } from "@/lib/formatTimestamp";
-import styles from "./player.module.css";
+import { cn } from "@/lib/utils";
+
+const ghostBtn =
+  "inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-default disabled:bg-muted disabled:text-muted-foreground disabled:opacity-70";
 
 export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
   courseId: string; lessonKey: string; lessonTitle: string;
@@ -44,27 +47,28 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
     onChange(value.slice(0, start) + stamp + value.slice(end));
     requestAnimationFrame(() => {
       ta.focus();
-      const pos = start + stamp.length;
-      ta.setSelectionRange(pos, pos);
+      ta.setSelectionRange(start + stamp.length, start + stamp.length);
     });
   }
 
+  const seg = "px-2.5 py-1 text-xs font-semibold transition-colors";
+
   return (
-    <section className={styles.card}>
-      <div className={styles.cardHead}>
-        <h3 className={styles.cardTitle}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+    <section className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/50 px-4 py-3">
+        <h3 className="inline-flex items-center gap-2 text-sm font-semibold">
+          <svg className="text-muted-foreground" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
           Lesson Notes
         </h3>
-        <div className={styles.cardHeadRight}>
-          <span className={styles.savedTag} data-status={status}>
-            {status === "saving" ? "Saving…" : status === "saved" ? "✓ Saved" : status === "error" ? "Save failed" : ""}
+        <div className="inline-flex items-center gap-3">
+          <span className={cn("text-xs font-semibold transition-colors", status === "saved" ? "text-success" : status === "saving" ? "text-muted-foreground" : status === "error" ? "text-destructive" : "text-transparent")}>
+            {status === "saving" ? "Saving…" : status === "saved" ? "✓ Saved" : status === "error" ? "Save failed" : "·"}
           </span>
-          <div className={styles.segmented} role="tablist">
-            <button type="button" data-active={mode === "write"} onClick={() => setMode("write")} suppressHydrationWarning>Write</button>
-            <button type="button" data-active={mode === "preview"} onClick={() => setMode("preview")} suppressHydrationWarning>Preview</button>
+          <div className="inline-flex overflow-hidden rounded-md border border-border" role="tablist">
+            <button type="button" className={cn(seg, mode === "write" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground")} onClick={() => setMode("write")} suppressHydrationWarning>Write</button>
+            <button type="button" className={cn(seg, mode === "preview" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground")} onClick={() => setMode("preview")} suppressHydrationWarning>Preview</button>
           </div>
-          <button className={styles.ghostBtn} onClick={exportMd} disabled={!value} title={value ? "Export notes as Markdown" : "No notes yet"} suppressHydrationWarning>
+          <button className={ghostBtn} onClick={exportMd} disabled={!value} title={value ? "Export notes as Markdown" : "No notes yet"} suppressHydrationWarning>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
             Export .md
           </button>
@@ -73,25 +77,25 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
 
       {mode === "write" ? (
         <>
-          <div className={styles.notesToolbar}>
-            <button className={styles.ghostBtn} onClick={insertTimestamp} title="Insert the current video time" suppressHydrationWarning>
+          <div className="flex gap-2 px-4 pt-3">
+            <button className={ghostBtn} onClick={insertTimestamp} title="Insert the current video time" suppressHydrationWarning>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 15 14" /></svg>
               Timestamp
             </button>
           </div>
           <textarea
             ref={taRef}
-            className={styles.notesArea}
+            className="min-h-[180px] w-full resize-y border-0 bg-transparent p-4 text-sm leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
             value={value}
             placeholder="Write your notes here… (Markdown supported, auto-saves as you type)"
             onChange={(e) => onChange(e.target.value)}
           />
         </>
       ) : (
-        <div className={styles.notesPreview}>
+        <div className="min-h-[180px] p-4">
           {value.trim()
-            ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown>
-            : <p className={styles.notesEmpty}>Nothing to preview yet.</p>}
+            ? <div className="prose prose-sm max-w-none dark:prose-invert"><ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown></div>
+            : <p className="text-muted-foreground">Nothing to preview yet.</p>}
         </div>
       )}
     </section>

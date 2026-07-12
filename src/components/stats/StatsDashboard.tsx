@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Flame, CircleCheck, GraduationCap, BookOpen, Target, Plus, Minus } from "lucide-react";
 import type { StatsData } from "@/server/statsTypes";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Heatmap } from "./Heatmap";
@@ -30,12 +31,27 @@ export function StatsDashboard({ data, learner }: { data: StatsData; learner: st
   const { totals, inProgress, completedCourses, completions } = data;
   const [now, setNow] = useState<number | null>(null);
   const [goal, setGoal] = useState(5);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
   useEffect(() => {
-    setNow(Date.now());
+    const t = Date.now();
+    setNow(t);
+    setSelectedYear(new Date(t).getFullYear());
     const g = parseInt(localStorage.getItem(GOAL_KEY) || "5", 10);
     if (Number.isFinite(g) && g > 0) setGoal(g);
   }, []);
+
+  const years = useMemo(() => {
+    if (now === null) return [];
+    const set = new Set<number>(completions.map((t) => new Date(t).getFullYear()));
+    set.add(new Date(now).getFullYear());
+    return [...set].sort((a, b) => b - a);
+  }, [now, completions]);
+
+  const yearTotal = useMemo(
+    () => (selectedYear === null ? 0 : completions.filter((t) => new Date(t).getFullYear() === selectedYear).length),
+    [completions, selectedYear],
+  );
 
   function updateGoal(next: number) {
     const g = Math.max(1, Math.min(50, next));
@@ -108,16 +124,45 @@ export function StatsDashboard({ data, learner }: { data: StatsData; learner: st
             <div className="mt-3 grid gap-3 lg:grid-cols-3">
               {/* Activity heatmap */}
               <div className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="font-semibold">Activity</h2>
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="font-semibold">Activity</h2>
+                    {selectedYear !== null && (
+                      <p className="text-xs text-muted-foreground">
+                        {yearTotal} lesson{yearTotal === 1 ? "" : "s"} completed in {selectedYear}
+                      </p>
+                    )}
+                  </div>
                   {now !== null && (
-                    <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <span className="flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground">
                       <Flame className="size-4 text-primary" />
                       {current} day{current === 1 ? "" : "s"} · longest {longest}
                     </span>
                   )}
                 </div>
-                {now === null ? <div className="h-28" /> : <Heatmap completions={completions} now={now} />}
+                {now === null || selectedYear === null ? (
+                  <div className="h-28" />
+                ) : (
+                  <div className="flex gap-4">
+                    <div className="min-w-0 flex-1">
+                      <Heatmap completions={completions} year={selectedYear} />
+                    </div>
+                    <div className="flex shrink-0 flex-col gap-1">
+                      {years.map((y) => (
+                        <button
+                          key={y}
+                          onClick={() => setSelectedYear(y)}
+                          className={cn(
+                            "rounded-md px-3 py-1 text-left text-sm font-medium transition-colors",
+                            y === selectedYear ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                          )}
+                        >
+                          {y}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Weekly goal */}

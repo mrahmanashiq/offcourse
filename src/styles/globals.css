@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./tokens.css";
+@plugin "@tailwindcss/typography";
 
 /* Drive Tailwind's dark: variant off the existing [data-theme="dark"] toggle. */
 @custom-variant dark (&:is([data-theme="dark"] *));
@@ -91,6 +92,15 @@
     color: var(--foreground);
     font-family: var(--font-sans);
   }
+}
+
+/* Sidebar "now playing" equalizer bars (video lessons only). */
+@keyframes eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-eqbar] { animation: none !important; }
 }
 
 /* Print only the completion certificate (isolate it from the rest of the page). */

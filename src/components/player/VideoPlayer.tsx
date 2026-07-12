@@ -5,7 +5,6 @@ import { DefaultVideoLayout, defaultLayoutIcons } from "@vidstack/react/player/l
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import { shouldAutoComplete } from "@/lib/player/completion";
-import styles from "./player.module.css";
 
 const RATE_KEY = "offcourse:playbackRate";
 function getSavedRate(): number {
@@ -61,7 +60,7 @@ export function VideoPlayer({ src, startAt, onSaveProgress, onComplete }: {
   return (
     <MediaPlayer
       ref={player}
-      className={styles.video}
+      className="block w-full"
       src={{ src, type: "video/mp4" }}
       aspectRatio="16/9"
       crossOrigin=""

@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import styles from "./player.module.css";
 
 // The app targets Chrome/Edge (File System Access API), both of which render PDFs
 // natively. We show the local file via a blob URL in an <iframe> — no react-pdf /
@@ -14,5 +13,5 @@ export function PdfView({ file }: { file: File }) {
     return () => URL.revokeObjectURL(u);
   }, [file]);
   if (!url) return null;
-  return <iframe className={styles.pdf} src={url} title="Course PDF" />;
+  return <iframe className="block h-[80dvh] w-full border-0 bg-white" src={url} title="Course PDF" />;
 }

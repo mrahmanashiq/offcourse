@@ -12,7 +12,7 @@ import { KeyboardHelp } from "@/components/player/KeyboardHelp";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import styles from "@/components/player/player.module.css";
+import { cn } from "@/lib/utils";
 
 type Progress = Record<string, { positionSeconds: number; completed: boolean }>;
 
@@ -67,7 +67,7 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
   const activeModule = active ? tree.modules.find((m) => m.lessons.some((l) => l.key === active.key))?.title ?? null : null;
 
   return (
-    <div className={`${styles.layout} ${sidebarOpen ? "" : styles.layoutCollapsed}`}>
+    <div className={cn("grid h-dvh overflow-hidden", sidebarOpen ? "grid-cols-[340px_1fr] max-[720px]:grid-cols-[1fr]" : "grid-cols-[1fr]")}>
       <Sidebar
         tree={tree}
         progress={progress}
@@ -80,11 +80,11 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
         total={total}
       />
 
-      <div className={styles.content}>
-        <header className={styles.topbar}>
-          <div className={styles.topbarLeft}>
+      <div className="flex h-dvh flex-col overflow-hidden">
+        <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-card px-6">
+          <div className="flex items-center gap-2">
             {!sidebarOpen && (
-              <button className={styles.iconBtn} onClick={() => setSidebarOpen(true)} aria-label="Show sidebar" title="Show course contents" suppressHydrationWarning>
+              <button className="grid size-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={() => setSidebarOpen(true)} aria-label="Show sidebar" title="Show course contents" suppressHydrationWarning>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v18" /></svg>
               </button>
             )}
@@ -94,13 +94,18 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
               </Link>
             </Button>
           </div>
-          <div className={styles.topbarRight}>
-            <div className={styles.progressPill}>
-              <span className={styles.progressBarSm}><span className={styles.progressFillSm} style={{ width: `${percent}%` }} /></span>
+          <div className="flex items-center gap-3">
+            <div className="hidden items-center gap-2 text-xs font-semibold tabular-nums text-muted-foreground sm:flex">
+              <span className="h-1.5 w-[90px] overflow-hidden rounded-full bg-border">
+                <span className="block h-full rounded-full bg-gradient-to-r from-primary to-primary/80 transition-all" style={{ width: `${percent}%` }} />
+              </span>
               {done} / {total} lessons · {percent}%
             </div>
             <button
-              className={`${styles.autoplay} ${autoplay ? styles.autoplayOn : ""}`}
+              className={cn(
+                "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors",
+                autoplay ? "border-primary bg-primary/10 text-primary" : "border-border bg-muted text-muted-foreground hover:text-foreground",
+              )}
               onClick={() => setAutoplay((v) => !v)}
               aria-pressed={autoplay}
               title="Auto-advance to the next lesson when a video ends"
@@ -114,7 +119,7 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
           </div>
         </header>
 
-        <main className={styles.main}>
+        <main className="flex-1 overflow-y-auto p-6">
           {needsReopen && <ReopenPrompt onReopen={reopen} courseName={tree.title} />}
           {handle && active && (
             <LessonView

@@ -1,7 +1,6 @@
 "use client";
 import { useMemo } from "react";
 
-const WEEKS = 26;
 const DAY = 86_400_000;
 
 function dayKey(d: Date): string {
@@ -21,74 +20,78 @@ function cellColor(level: number): string {
   return `color-mix(in srgb, var(--color-accent) ${pct}%, var(--color-surface))`;
 }
 
-export function Heatmap({ completions, now }: { completions: number[]; now: number }) {
+export function Heatmap({ completions, year }: { completions: number[]; year: number }) {
   const { weeks, months } = useMemo(() => {
     const counts = new Map<string, number>();
     for (const t of completions) {
-      const k = dayKey(new Date(t));
-      counts.set(k, (counts.get(k) ?? 0) + 1);
+      const d = new Date(t);
+      if (d.getFullYear() === year) {
+        const k = dayKey(d);
+        counts.set(k, (counts.get(k) ?? 0) + 1);
+      }
     }
-    const end = new Date(now); end.setHours(0, 0, 0, 0);
-    const start = new Date(end.getTime() - (WEEKS * 7 - 1) * DAY);
-    start.setDate(start.getDate() - start.getDay()); // back up to Sunday
+    const start = new Date(year, 0, 1);
+    start.setDate(start.getDate() - start.getDay()); // Sunday on/before Jan 1
+    const end = new Date(year, 11, 31);
 
-    const weeks: { key: string; date: Date; count: number; level: number; future: boolean }[][] = [];
+    const weeks: { key: string; date: Date; count: number; level: number; muted: boolean }[][] = [];
     const months: { col: number; label: string }[] = [];
     const cursor = new Date(start);
     let lastMonth = -1;
+    let col = 0;
 
-    for (let w = 0; w <= WEEKS; w++) {
-      const col: { key: string; date: Date; count: number; level: number; future: boolean }[] = [];
+    while (cursor <= end) {
+      const week: { key: string; date: Date; count: number; level: number; muted: boolean }[] = [];
       for (let d = 0; d < 7; d++) {
-        const key = dayKey(cursor);
-        const count = counts.get(key) ?? 0;
-        col.push({ key, date: new Date(cursor), count, level: levelOf(count), future: cursor.getTime() > end.getTime() });
-        if (d === 0 && cursor.getMonth() !== lastMonth) {
-          months.push({ col: w, label: cursor.toLocaleString(undefined, { month: "short" }) });
+        const inYear = cursor.getFullYear() === year;
+        const count = inYear ? counts.get(dayKey(cursor)) ?? 0 : 0;
+        // Every in-year day gets a cell (empty days keep the default box color);
+        // only the out-of-year padding at the very start/end stays transparent.
+        week.push({ key: dayKey(cursor), date: new Date(cursor), count, level: levelOf(count), muted: !inYear });
+        if (d === 0 && inYear && cursor.getMonth() !== lastMonth) {
+          months.push({ col, label: cursor.toLocaleString(undefined, { month: "short" }) });
           lastMonth = cursor.getMonth();
         }
-        cursor.setDate(cursor.getDate() + 1);
+        cursor.setTime(cursor.getTime() + DAY);
       }
-      weeks.push(col);
+      weeks.push(week);
+      col++;
     }
     return { weeks, months };
-  }, [completions, now]);
+  }, [completions, year]);
 
   return (
     <div className="overflow-x-auto">
       <div className="inline-block min-w-max">
-        {/* month labels */}
         <div className="mb-1 flex gap-[3px] pl-7">
           {weeks.map((_, w) => {
             const m = months.find((x) => x.col === w);
             return (
-              <div key={w} className="relative h-3 w-3">
+              <div key={w} className="relative size-3">
                 {m && <span className="absolute left-0 top-0 text-[10px] text-muted-foreground">{m.label}</span>}
               </div>
             );
           })}
         </div>
         <div className="flex gap-[3px]">
-          {/* day-of-week labels */}
           <div className="mr-1 flex flex-col gap-[3px] text-[9px] leading-3 text-muted-foreground">
             {["", "Mon", "", "Wed", "", "Fri", ""].map((d, i) => (
               <span key={i} className="h-3">{d}</span>
             ))}
           </div>
-          {weeks.map((col, w) => (
+          {weeks.map((week, w) => (
             <div key={w} className="flex flex-col gap-[3px]">
-              {col.map((cell) => (
+              {week.map((cell) => (
                 <div
                   key={cell.key}
-                  title={cell.future ? "" : `${cell.count} lesson${cell.count === 1 ? "" : "s"} · ${cell.date.toLocaleDateString()}`}
+                  title={cell.muted ? "" : `${cell.count} lesson${cell.count === 1 ? "" : "s"} · ${cell.date.toLocaleDateString()}`}
                   className="size-3 rounded-[3px]"
-                  style={{ background: cell.future ? "transparent" : cellColor(cell.level) }}
+                  style={{ background: cell.muted ? "transparent" : cellColor(cell.level) }}
                 />
               ))}
             </div>
           ))}
         </div>
-        {/* legend */}
         <div className="mt-3 flex items-center gap-1 pl-7 text-[10px] text-muted-foreground">
           <span>Less</span>
           {[0, 1, 2, 3, 4].map((l) => (

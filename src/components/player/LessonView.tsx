@@ -7,7 +7,7 @@ import { VideoPlayer } from "./VideoPlayer";
 import { PdfView } from "./PdfView";
 import { NotesPanel } from "./NotesPanel";
 import { BookmarksPanel } from "./BookmarksPanel";
-import styles from "./player.module.css";
+import { Button } from "@/components/ui/button";
 
 type Prog = { positionSeconds: number; completed: boolean } | undefined;
 
@@ -51,11 +51,11 @@ export function LessonView({
   }
 
   return (
-    <div className={styles.lessonView}>
-      {moduleName && <p className={styles.eyebrow}>{moduleName}</p>}
-      <h1 className={styles.lessonTitle}>{lesson.title}</h1>
+    <div className="mx-auto max-w-[960px]">
+      {moduleName && <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">{moduleName}</p>}
+      <h1 className="mb-4 text-[22px] font-bold leading-tight tracking-tight">{lesson.title}</h1>
 
-      <div className={styles.stageWrap}>
+      <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-2xl">
         {lesson.kind === "video" && videoUrl && (
           <VideoPlayer
             src={videoUrl}
@@ -66,25 +66,25 @@ export function LessonView({
         )}
         {lesson.kind === "pdf" && file && <PdfView file={file} />}
         {lesson.kind === "doc" && docUrl && (
-          <div className={styles.docStage}>
-            <a className={styles.docLink} href={docUrl} download={lesson.title}>Download {lesson.title}</a>
+          <div className="grid place-items-center bg-card p-8">
+            <a className="font-semibold text-primary" href={docUrl} download={lesson.title}>Download {lesson.title}</a>
           </div>
         )}
       </div>
 
-      <div className={styles.nav}>
-        <button className={styles.navBtn} onClick={onPrev} disabled={!hasPrev} suppressHydrationWarning>
+      <div className="my-4 flex items-center justify-between gap-4">
+        <Button variant="outline" onClick={onPrev} disabled={!hasPrev} suppressHydrationWarning>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
           Previous
-        </button>
-        <span className={styles.counter}>{index + 1} / {total}</span>
-        <button className={styles.navBtnPrimary} onClick={onNext} disabled={!hasNext} suppressHydrationWarning>
+        </Button>
+        <span className="text-xs tabular-nums text-muted-foreground">{index + 1} / {total}</span>
+        <Button onClick={onNext} disabled={!hasNext} suppressHydrationWarning>
           Next
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
-        </button>
+        </Button>
       </div>
 
-      <div className={styles.belowStage}>
+      <div className="mt-6 flex flex-col gap-4">
         <NotesPanel key={`notes-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} lessonTitle={lesson.title} />
         {lesson.kind === "video" && <BookmarksPanel key={`bm-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} />}
       </div>
