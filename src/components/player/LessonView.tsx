@@ -73,12 +73,12 @@ export function LessonView({
       </div>
 
       <div className={styles.nav}>
-        <button className={styles.navBtn} onClick={onPrev} disabled={!hasPrev}>
+        <button className={styles.navBtn} onClick={onPrev} disabled={!hasPrev} suppressHydrationWarning>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
           Previous
         </button>
         <span className={styles.counter}>{index + 1} / {total}</span>
-        <button className={styles.navBtnPrimary} onClick={onNext} disabled={!hasNext}>
+        <button className={styles.navBtnPrimary} onClick={onNext} disabled={!hasNext} suppressHydrationWarning>
           Next
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
         </button>

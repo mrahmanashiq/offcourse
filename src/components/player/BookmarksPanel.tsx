@@ -34,16 +34,16 @@ export function BookmarksPanel({ courseId, lessonKey }: { courseId: string; less
       </div>
       <div className={styles.bmAdd}>
         <input className={styles.bmInput} value={label} placeholder="Label (optional)" onChange={(e) => setLabel(e.target.value)} />
-        <button className={styles.ghostBtn} onClick={add}>Add at current time</button>
+        <button className={styles.ghostBtn} onClick={add} suppressHydrationWarning>Add at current time</button>
       </div>
       {items.length > 0 && (
         <ul className={styles.bmList}>
           {items.map((b) => (
             <li key={b.id} className={styles.bmItem}>
-              <button className={styles.bmJump} onClick={() => jump(b.timestampSeconds)}>
+              <button className={styles.bmJump} onClick={() => jump(b.timestampSeconds)} suppressHydrationWarning>
                 <span className={styles.bmTime}>{formatTimestamp(b.timestampSeconds)}</span> {b.label}
               </button>
-              <button aria-label="delete bookmark" className={styles.bmDel} onClick={() => remove(b.id)}>×</button>
+              <button aria-label="delete bookmark" className={styles.bmDel} onClick={() => remove(b.id)} suppressHydrationWarning>×</button>
             </li>
           ))}
         </ul>

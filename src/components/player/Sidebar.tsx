@@ -46,7 +46,7 @@ export function Sidebar({
       <div className={styles.sidebarHead}>
         <div className={styles.sidebarHeadTop}>
           <h2 className={styles.courseTitle} title={tree.title}>{tree.title}</h2>
-          <button className={styles.iconBtn} onClick={onToggle} aria-label="Hide sidebar" title="Hide sidebar">
+          <button className={styles.iconBtn} onClick={onToggle} aria-label="Hide sidebar" title="Hide sidebar" suppressHydrationWarning>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></svg>
           </button>
         </div>
@@ -68,7 +68,7 @@ export function Sidebar({
           runningNum += m.lessons.length;
           return (
             <section key={`${m.title}-${mi}`} className={styles.section}>
-              <button className={styles.sectionHead} onClick={() => toggleSection(mi)} aria-expanded={isOpen}>
+              <button className={styles.sectionHead} onClick={() => toggleSection(mi)} aria-expanded={isOpen} suppressHydrationWarning>
                 <span className={styles.sectionInfo}>
                   <span className={styles.sectionName}>{m.title}</span>
                   <span className={styles.sectionMeta}>{mDone} / {m.lessons.length}</span>
@@ -87,6 +87,7 @@ export function Sidebar({
                           onClick={() => onToggleComplete(l.key, !isDone)}
                           aria-label={isDone ? "Mark incomplete" : "Mark complete"}
                           title={isDone ? "Mark incomplete" : "Mark complete"}
+                          suppressHydrationWarning
                         >
                           <span className={`${styles.circle} ${isDone ? styles.circleDone : ""}`}>
                             {isDone && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
