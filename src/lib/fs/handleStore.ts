@@ -10,6 +10,9 @@ export async function saveHandle(courseId: string, handle: FileSystemDirectoryHa
 export async function loadHandle(courseId: string): Promise<FileSystemDirectoryHandle | undefined> {
   return (await dbp()).get(STORE, courseId);
 }
+export async function deleteHandle(courseId: string) {
+  await (await dbp()).delete(STORE, courseId);
+}
 export async function ensureReadPermission(handle: FileSystemDirectoryHandle): Promise<boolean> {
   // @ts-expect-error permission APIs exist on FileSystemHandle but not in TS lib types
   const q = await handle.queryPermission({ mode: "read" });

@@ -1,11 +1,30 @@
 :root {
-  --color-bg: #f7f7f9;
+  /* Base surfaces (light) */
+  --color-bg: #f5f5f7;
   --color-surface: #ffffff;
-  --color-border: #e7e7ec;
-  --color-text: #14141a;
-  --color-text-muted: #6b6b78;
-  --color-accent: #6d5efc;
-  --color-accent-strong: #5a48f5;
+  --color-surface-hover: #f0f0f3;
+  --color-surface-active: #e5e5ea;
+  --color-border: #d4d4dc;
+  --color-border-subtle: #e0e0e8;
+
+  /* Text */
+  --color-text: #111122;
+  --color-text-muted: #555568;
+  --color-text-subtle: #78788a;
+
+  /* Accent */
+  --color-accent: #6c47f0;
+  --color-accent-hover: #7d5cf5;
+  --color-accent-strong: #5a3fd6;
+  --color-accent-glow: rgba(108, 71, 240, 0.10);
+
+  /* Status */
+  --color-success: #16a34a;
+  --color-success-muted: rgba(22, 163, 74, 0.10);
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+
+  /* Radius / space / type */
   --radius-md: 12px;
   --radius-lg: 20px;
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
@@ -13,8 +32,33 @@
   --font-sans: ui-sans-serif, system-ui, "Segoe UI", Inter, sans-serif;
   --shadow-card: 0 1px 2px rgba(20,20,26,.04), 0 8px 24px rgba(20,20,26,.06);
 }
+
 [data-theme="dark"] {
-  --color-bg: #0e0e12; --color-surface: #17171d; --color-border: #26262f;
-  --color-text: #f3f3f6; --color-text-muted: #9a9aa6;
+  --color-bg: #0a0a0f;
+  --color-surface: #12121a;
+  --color-surface-hover: #1a1a25;
+  --color-surface-active: #22222f;
+  --color-border: #2a2a3a;
+  --color-border-subtle: #1e1e2e;
+
+  --color-text: #e8e8f0;
+  --color-text-muted: #8888a0;
+  --color-text-subtle: #5a5a70;
+
+  --color-accent: #7c5cfc;
+  --color-accent-hover: #8e72ff;
+  --color-accent-strong: #8e72ff;
+  --color-accent-glow: rgba(124, 92, 252, 0.15);
+
+  --color-success: #34d399;
+  --color-success-muted: rgba(52, 211, 153, 0.15);
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+
   --shadow-card: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.4);
 }
+
+/* Vidstack player brand color */
+:root { --media-brand: #6c47f0; --media-focus-ring-color: #6c47f0; }
+[data-theme="dark"] { --media-brand: #7c5cfc; --media-focus-ring-color: #7c5cfc; }
+[data-media-player] { --media-brand: var(--media-brand); }

@@ -25,6 +25,10 @@
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
   background: var(--color-accent);
   color: #fff;
   border: 0;
@@ -36,4 +40,12 @@
 
 .btn:hover {
   background: var(--color-accent-strong);
+}
+
+.icon {
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 50%;
+  padding: 3px;
+  box-sizing: content-box;
 }

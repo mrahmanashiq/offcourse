@@ -1,22 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/Page/AnnotationLayer.css";
-import "react-pdf/dist/Page/TextLayer.css";
 import styles from "./player.module.css";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-
+// The app targets Chrome/Edge (File System Access API), both of which render PDFs
+// natively. We show the local file via a blob URL in an <iframe> — no react-pdf /
+// pdfjs-dist. This also works fully offline; the previous pdfjs setup fetched its
+// worker from a CDN, which would fail without a network connection.
 export function PdfView({ file }: { file: File }) {
   const [url, setUrl] = useState<string | null>(null);
-  const [pages, setPages] = useState(0);
-  useEffect(() => { const u = URL.createObjectURL(file); setUrl(u); return () => URL.revokeObjectURL(u); }, [file]);
+  useEffect(() => {
+    const u = URL.createObjectURL(file);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
   if (!url) return null;
-  return (
-    <div className={styles.pdf}>
-      <Document file={url} onLoadSuccess={({ numPages }) => setPages(numPages)}>
-        {Array.from({ length: pages }, (_, i) => <Page key={i} pageNumber={i + 1} width={800} />)}
-      </Document>
-    </div>
-  );
+  return <iframe className={styles.pdf} src={url} title="Course PDF" />;
 }

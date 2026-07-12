@@ -30,14 +30,28 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
   }
 
   return (
-    <section className={styles.panel}>
-      <div className={styles.panelHead}>
-        <h3 className={styles.panelTitle}>Notes</h3>
-        <span className={styles.status}>{status === "saving" ? "Saving…" : status === "saved" ? "Saved" : status === "error" ? "Save failed" : ""}</span>
+    <section className={styles.card}>
+      <div className={styles.cardHead}>
+        <h3 className={styles.cardTitle}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+          Lesson Notes
+        </h3>
+        <div className={styles.cardHeadRight}>
+          <span className={styles.savedTag} data-status={status}>
+            {status === "saving" ? "Saving…" : status === "saved" ? "✓ Saved" : status === "error" ? "Save failed" : ""}
+          </span>
+          <button className={styles.ghostBtn} onClick={exportMd} disabled={!value} title={value ? "Export notes as Markdown" : "No notes yet"}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+            Export .md
+          </button>
+        </div>
       </div>
-      <textarea className={styles.notes} value={value} placeholder="Write Markdown notes…"
-        onChange={(e) => onChange(e.target.value)} />
-      <button className={styles.exportBtn} onClick={exportMd} disabled={!value}>Export .md</button>
+      <textarea
+        className={styles.notesArea}
+        value={value}
+        placeholder="Write your notes here… (Auto-saves as you type)"
+        onChange={(e) => onChange(e.target.value)}
+      />
     </section>
   );
 }

@@ -1,9 +1,11 @@
 "use server";
 import { and, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { courses, lessonProgress } from "@/db/schema";
 import { requireUserId } from "@/lib/requireUserId";
 import type { CourseTree } from "@/lib/course/types";
+import type { CourseSummary } from "./courseTypes";
 
 export async function upsertCourse(input: {
   id?: string; title: string; folderName: string;
@@ -23,19 +25,35 @@ export async function upsertCourse(input: {
   return { id: row.id };
 }
 
-export async function listCourses() {
+export async function listCourses(): Promise<CourseSummary[]> {
   const userId = await requireUserId();
   const cs = await db.select().from(courses).where(eq(courses.userId, userId));
-  const result = [];
+  const result: CourseSummary[] = [];
   for (const c of cs) {
     const prog = await db.select().from(lessonProgress)
       .where(and(eq(lessonProgress.userId, userId), eq(lessonProgress.courseId, c.id)));
     const tree = c.structureJson as CourseTree;
-    const total = tree.modules.reduce((n, m) => n + m.lessons.length, 0) || 1;
+    const lessonCount = tree.modules.reduce((n, m) => n + m.lessons.length, 0);
     const done = prog.filter((p) => p.completed).length;
-    result.push({ id: c.id, title: c.title, thumbnail: c.thumbnail, percent: Math.round((done / total) * 100) });
+    result.push({
+      id: c.id,
+      title: c.title,
+      thumbnail: c.thumbnail,
+      percent: Math.round((done / (lessonCount || 1)) * 100),
+      lessonCount,
+      moduleCount: tree.modules.length,
+      completedCount: done,
+      lastOpenedAt: c.lastOpenedAt ? c.lastOpenedAt.getTime() : null,
+      createdAt: c.createdAt.getTime(),
+    });
   }
   return result;
+}
+
+export async function deleteCourse(id: string): Promise<void> {
+  const userId = await requireUserId();
+  await db.delete(courses).where(and(eq(courses.id, id), eq(courses.userId, userId)));
+  revalidatePath("/library");
 }
 
 export async function getCourse(id: string) {

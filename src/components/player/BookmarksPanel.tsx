@@ -25,23 +25,29 @@ export function BookmarksPanel({ courseId, lessonKey }: { courseId: string; less
   function jump(t: number) { window.dispatchEvent(new CustomEvent("offcourse:seek", { detail: t })); }
 
   return (
-    <section className={styles.panel}>
-      <h3 className={styles.panelTitle}>Bookmarks</h3>
-      <div className={styles.bmAdd}>
-        <input className={styles.bmInput} value={label} placeholder="Label (optional)"
-          onChange={(e) => setLabel(e.target.value)} />
-        <button className={styles.exportBtn} onClick={add}>Add at current time</button>
+    <section className={styles.card}>
+      <div className={styles.cardHead}>
+        <h3 className={styles.cardTitle}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
+          Bookmarks
+        </h3>
       </div>
-      <ul className={styles.bmList}>
-        {items.map((b) => (
-          <li key={b.id} className={styles.bmItem}>
-            <button className={styles.bmJump} onClick={() => jump(b.timestampSeconds)}>
-              <span className={styles.bmTime}>{formatTimestamp(b.timestampSeconds)}</span> {b.label}
-            </button>
-            <button aria-label="delete bookmark" className={styles.bmDel} onClick={() => remove(b.id)}>×</button>
-          </li>
-        ))}
-      </ul>
+      <div className={styles.bmAdd}>
+        <input className={styles.bmInput} value={label} placeholder="Label (optional)" onChange={(e) => setLabel(e.target.value)} />
+        <button className={styles.ghostBtn} onClick={add}>Add at current time</button>
+      </div>
+      {items.length > 0 && (
+        <ul className={styles.bmList}>
+          {items.map((b) => (
+            <li key={b.id} className={styles.bmItem}>
+              <button className={styles.bmJump} onClick={() => jump(b.timestampSeconds)}>
+                <span className={styles.bmTime}>{formatTimestamp(b.timestampSeconds)}</span> {b.label}
+              </button>
+              <button aria-label="delete bookmark" className={styles.bmDel} onClick={() => remove(b.id)}>×</button>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
