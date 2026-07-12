@@ -7,6 +7,13 @@ import "@vidstack/react/player/styles/default/layouts/video.css";
 import { shouldAutoComplete } from "@/lib/player/completion";
 import styles from "./player.module.css";
 
+const RATE_KEY = "offcourse:playbackRate";
+function getSavedRate(): number {
+  if (typeof window === "undefined") return 1;
+  const r = parseFloat(localStorage.getItem(RATE_KEY) ?? "");
+  return Number.isFinite(r) && r > 0 ? r : 1;
+}
+
 export function VideoPlayer({ src, startAt, onSaveProgress, onComplete }: {
   src: string; startAt: number;
   onSaveProgress: (seconds: number) => void; onComplete: () => void;
@@ -29,7 +36,13 @@ export function VideoPlayer({ src, startAt, onSaveProgress, onComplete }: {
 
   function onCanPlay() {
     const p = player.current;
-    if (p && startAt > 0 && startAt < p.duration) p.currentTime = startAt;
+    if (!p) return;
+    p.playbackRate = getSavedRate(); // restore the speed the user last chose
+    if (startAt > 0 && startAt < p.duration) p.currentTime = startAt;
+  }
+  function onRateChange() {
+    const r = player.current?.playbackRate;
+    if (r && r > 0 && typeof window !== "undefined") localStorage.setItem(RATE_KEY, String(r));
   }
   function onTimeUpdate(detail: { currentTime: number }) {
     const now = Math.floor(detail.currentTime);
@@ -68,6 +81,7 @@ export function VideoPlayer({ src, startAt, onSaveProgress, onComplete }: {
       }}
       onCanPlay={onCanPlay}
       onTimeUpdate={onTimeUpdate}
+      onRateChange={onRateChange}
       onEnded={onComplete}
       onPause={onPause}
     >

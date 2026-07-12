@@ -8,6 +8,7 @@ import { setCompleted } from "@/server/progress";
 import { Sidebar } from "@/components/player/Sidebar";
 import { ReopenPrompt } from "@/components/player/ReopenPrompt";
 import { LessonView } from "@/components/player/LessonView";
+import { KeyboardHelp } from "@/components/player/KeyboardHelp";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -25,7 +26,10 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
   const [autoplay, setAutoplay] = useState(false);
 
   const flat = useMemo(() => tree.modules.flatMap((m) => m.lessons), [tree]);
-  const [active, setActive] = useState<Lesson | null>(flat[0] ?? null);
+  // "Continue learning": start on the first lesson that isn't completed yet.
+  const [active, setActive] = useState<Lesson | null>(
+    () => flat.find((l) => !initialProgress[l.key]?.completed) ?? flat[0] ?? null,
+  );
 
   useEffect(() => {
     (async () => {
@@ -105,6 +109,7 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" /></svg>
               Autoplay
             </button>
+            <KeyboardHelp />
             <ThemeToggle />
           </div>
         </header>
