@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import type { CourseTree, Lesson } from "@/lib/course/types";
 import styles from "./player.module.css";
 
@@ -9,6 +10,9 @@ export function Sidebar({ tree, progress, activeKey, onSelect }: {
 }) {
   return (
     <nav className={styles.sidebar} aria-label="Course contents">
+      <Link href="/library" className={styles.homeLink}>
+        <span aria-hidden="true">←</span> Library
+      </Link>
       <h2 className={styles.courseTitle}>{tree.title}</h2>
       {tree.modules.map((m) => (
         <section key={m.title} className={styles.module}>

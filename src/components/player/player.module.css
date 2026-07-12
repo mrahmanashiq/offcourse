@@ -1,5 +1,8 @@
 .layout { display: grid; grid-template-columns: 320px 1fr; min-height: 100dvh; }
 .sidebar { border-right: 1px solid var(--color-border); padding: var(--space-4); overflow-y: auto; background: var(--color-surface); }
+.homeLink { display: inline-flex; align-items: center; gap: var(--space-1); margin-bottom: var(--space-3);
+  font-size: 13px; color: var(--color-text-muted); text-decoration: none; }
+.homeLink:hover { color: var(--color-accent); }
 .courseTitle { font-size: 16px; margin: 0 0 var(--space-4); }
 .module { margin-bottom: var(--space-4); }
 .moduleTitle { font-size: 13px; color: var(--color-text-muted); margin: 0 0 var(--space-2);
@@ -28,7 +31,8 @@
 .video { width: 100%; border-radius: var(--radius-lg); background: #000; }
 .pdf { max-height: 80dvh; overflow-y: auto; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
 .completeToggle { display: inline-flex; gap: var(--space-2); margin-top: var(--space-4); color: var(--color-text-muted); }
-.panels { display: flex; flex-direction: column; gap: var(--space-6); }
+/* Offset the panels down so Notes lines up with the video, not the lesson title above it. */
+.panels { display: flex; flex-direction: column; gap: var(--space-6); margin-top: calc(var(--space-8) + var(--space-2)); }
 .panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-4); }
 .panelHead { display: flex; justify-content: space-between; align-items: baseline; }
 .panelTitle { margin: 0 0 var(--space-2); font-size: 14px; }
