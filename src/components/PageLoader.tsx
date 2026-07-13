@@ -9,11 +9,12 @@ export function Spinner({ className }: { className?: string }) {
   );
 }
 
-// Centered page-level loader used by route loading.tsx boundaries and client
-// data loaders, so navigation never looks frozen.
-export function PageLoader({ label = "Loading…", className }: { label?: string; className?: string }) {
+// Full-viewport loader used by route loading.tsx boundaries and client data
+// loaders. Fixed + centered so it sits dead-center every time and never jumps
+// between the route boundary and the client loader.
+export function PageLoader({ label = "Loading…" }: { label?: string }) {
   return (
-    <div className={cn("grid min-h-[60vh] w-full place-items-center", className)} role="status" aria-live="polite">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-background" role="status" aria-live="polite">
       <div className="flex flex-col items-center gap-3 text-muted-foreground">
         <Spinner className="size-7 text-primary" />
         <p className="text-sm font-medium">{label}</p>

@@ -39,7 +39,7 @@ export function CourseLoader({ courseId }: { courseId: string }) {
   }, [courseId]);
 
   if (state.status === "loading") {
-    return <div className="grid h-dvh place-items-center"><PageLoader label="Loading course…" /></div>;
+    return <PageLoader label="Loading course…" />;
   }
   if (state.status === "notfound") {
     return (
