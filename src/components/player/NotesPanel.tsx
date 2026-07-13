@@ -138,7 +138,7 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
   const previewSrc = value
     .replace(/\[(\d{1,2}:\d{2}(?::\d{2})?)\]/g, (_m, ts) => `[${ts}](#t=${tsToSeconds(ts)})`)
     .replace(/==([^=\n]+)==/g, (_m, t) => `<mark>${escapeHtml(t)}</mark>`)
-    .replace(/img:\/\/([\w-]+)/g, (_m, id) => imgMap[id] ?? ""); // resolve screenshots last
+    .replace(/img:\/\/([\w-]+)/g, (_m, id) => imgMap[id] ?? _m); // resolve screenshots; keep the token if unavailable
 
   const seg = "px-2.5 py-1 text-xs font-semibold transition-colors";
 
@@ -215,15 +215,13 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
                 rehypePlugins={[rehypeRaw]}
                 components={{
                   img({ src, alt }) {
-                    if (!src || typeof src !== "string") {
-                      return (
-                        <span className="my-1 inline-flex items-center gap-1.5 rounded-md border border-dashed border-border px-2.5 py-1.5 align-middle text-xs text-muted-foreground">
-                          🖼️ {alt || "Screenshot"} unavailable on this device
-                        </span>
-                      );
+                    const s = typeof src === "string" ? src : "";
+                    if (s.startsWith("data:") || s.startsWith("http")) {
+                      // eslint-disable-next-line @next/next/no-img-element -- local/data-URL screenshot
+                      return <img src={s} alt={alt || ""} className="my-2 max-w-full rounded-lg border border-border" />;
                     }
-                    // eslint-disable-next-line @next/next/no-img-element -- local/data-URL screenshot
-                    return <img src={src} alt={alt || ""} className="my-2 max-w-full rounded-lg border border-border" />;
+                    // Unresolvable image — just show the raw markdown reference, no broken icon.
+                    return <code className="text-xs text-muted-foreground">![{alt || "screenshot"}]({s})</code>;
                   },
                   a({ href, children }) {
                     if (href?.startsWith("#t=")) {
