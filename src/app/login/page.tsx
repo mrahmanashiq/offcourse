@@ -2,6 +2,7 @@ import { signIn, auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { LocalModeButton } from "./LocalModeButton";
 
 export default async function LoginPage() {
   if (await auth()) redirect("/library");
@@ -10,9 +11,9 @@ export default async function LoginPage() {
       <Card className="w-[min(400px,92vw)] text-center">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Offcourse</CardTitle>
-          <CardDescription>Sign in to access your course library.</CardDescription>
+          <CardDescription>Sign in to sync across devices, or use it entirely on this device.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-3">
           <form
             action={async () => {
               "use server";
@@ -31,6 +32,15 @@ export default async function LoginPage() {
               Continue with Google
             </Button>
           </form>
+
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
+          </div>
+
+          <LocalModeButton />
+          <p className="text-xs text-muted-foreground">
+            Local mode keeps your courses, progress and notes on this device only — no account, nothing synced.
+          </p>
         </CardContent>
       </Card>
     </main>

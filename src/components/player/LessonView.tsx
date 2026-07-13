@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import type { Lesson } from "@/lib/course/types";
 import { fileFromRelPath } from "@/lib/fs/readDir";
-import { saveProgress, setCompleted } from "@/server/progress";
+import { saveProgress, setCompleted } from "@/lib/data/facade";
 import { VideoPlayer } from "./VideoPlayer";
 import { PdfView } from "./PdfView";
 import { NotesPanel } from "./NotesPanel";

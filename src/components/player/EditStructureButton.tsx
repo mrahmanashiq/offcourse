@@ -1,9 +1,9 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ChevronUp, ChevronDown, Pencil } from "lucide-react";
 import type { CourseTree } from "@/lib/course/types";
-import { saveCourseStructure } from "@/server/courses";
+import { saveCourseStructure } from "@/lib/data/facade";
+import { invalidateData } from "@/lib/data/mode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,7 +21,6 @@ function move<T>(arr: T[], from: number, to: number): T[] {
 }
 
 export function EditStructureButton({ courseId, tree }: { courseId: string; tree: CourseTree }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<CourseTree>(() => clone(tree));
   const [pending, startTransition] = useTransition();
@@ -51,7 +50,7 @@ export function EditStructureButton({ courseId, tree }: { courseId: string; tree
   function onSave() {
     startTransition(async () => {
       await saveCourseStructure(courseId, draft);
-      router.refresh();
+      invalidateData();
       setOpen(false);
     });
   }

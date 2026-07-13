@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, Play, FileText } from "lucide-react";
-import { getSearchIndex } from "@/server/searchIndex";
+import { getSearchIndex } from "@/lib/data/facade";
 import type { SearchIndex } from "@/server/searchTypes";
 import {
   CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem,

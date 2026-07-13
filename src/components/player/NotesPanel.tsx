@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { Bold, Italic, Code, List, Clock, Highlighter, X } from "lucide-react";
-import { getNote, saveNote, getNoteTags, setNoteTags } from "@/server/notes";
+import { getNote, saveNote, getNoteTags, setNoteTags } from "@/lib/data/facade";
 import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
 import { formatTimestamp } from "@/lib/formatTimestamp";
 import { cn } from "@/lib/utils";

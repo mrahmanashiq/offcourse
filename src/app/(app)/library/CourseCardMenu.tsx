@@ -1,5 +1,4 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import {
   Pin, PinOff, Tag, Image as ImageIcon, FolderSync, Archive, ArchiveRestore, Trash2, X,
@@ -7,8 +6,9 @@ import {
 import type { CourseSummary } from "@/server/courseTypes";
 import {
   deleteCourse, setCoursePinned, setCourseArchived, setCourseTags, setCourseThumbnail,
-} from "@/server/courses";
+} from "@/lib/data/facade";
 import { deleteHandle, saveHandle } from "@/lib/fs/handleStore";
+import { invalidateData } from "@/lib/data/mode";
 import { pickCourseFolder } from "@/lib/fs/readDir";
 import { imageFileToThumbnail } from "@/lib/thumbnail";
 import { Button } from "@/components/ui/button";
@@ -23,19 +23,18 @@ import {
 type OpenDialog = null | "tags" | "cover";
 
 export function CourseCardMenu({ course }: { course: CourseSummary }) {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [dialog, setDialog] = useState<OpenDialog>(null);
 
   const run = (fn: () => Promise<unknown>) =>
-    startTransition(async () => { await fn(); router.refresh(); });
+    startTransition(async () => { await fn(); invalidateData(); });
 
   function onRemove() {
     if (!confirm(`Remove “${course.title}” from your library?\n\nYour video files stay on your drive — only this library entry is removed.`)) return;
     startTransition(async () => {
       await deleteCourse(course.id);
       try { await deleteHandle(course.id); } catch { /* handle may not exist on this device */ }
-      router.refresh();
+      invalidateData();
     });
   }
 

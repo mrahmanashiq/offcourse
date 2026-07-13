@@ -5,7 +5,7 @@ import { pickCourseFolder, readDirTree, fileFromRelPath } from "@/lib/fs/readDir
 import { saveHandle as persistHandle } from "@/lib/fs/handleStore";
 import { parseCourse } from "@/lib/course/parse";
 import { captureThumbnail } from "@/lib/thumbnail";
-import { upsertCourse } from "@/server/courses";
+import { upsertCourse } from "@/lib/data/facade";
 import { Button } from "@/components/ui/button";
 
 export function AddCourseButton() {

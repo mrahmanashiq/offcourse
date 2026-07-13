@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { addBookmark, listBookmarks, deleteBookmark } from "@/server/bookmarks";
+import { addBookmark, listBookmarks, deleteBookmark } from "@/lib/data/facade";
 import { formatTimestamp } from "@/lib/formatTimestamp";
 import { Input } from "@/components/ui/input";
 
