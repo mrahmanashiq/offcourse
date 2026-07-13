@@ -166,9 +166,9 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
       </div>
 
       {/* Tags */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-border px-4 py-2">
+      <div className="flex min-h-11 flex-wrap items-center gap-1.5 border-b border-border px-4 py-2.5">
         {tags.map((t) => (
-          <span key={t} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+          <span key={t} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
             {t}
             <button type="button" onClick={() => commitTags(tags.filter((x) => x !== t))} aria-label={`Remove tag ${t}`} className="text-primary/70 hover:text-destructive" suppressHydrationWarning>
               <X className="size-3" />
@@ -181,7 +181,7 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
           onKeyDown={onTagKey}
           onBlur={addTag}
           placeholder={tags.length ? "Add tag" : "Add tags (press Enter)…"}
-          className="min-w-[100px] flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+          className="min-w-[120px] flex-1 self-stretch bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           aria-label="Add a tag"
         />
       </div>
