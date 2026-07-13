@@ -10,9 +10,10 @@ import { LibraryGrid } from "./LibraryGrid";
 import { UnsupportedBrowser } from "@/components/UnsupportedBrowser";
 import { CommandSearchButton } from "@/components/CommandSearchButton";
 import { LocalModeBadge } from "@/components/LocalModeBadge";
+import { BrandMark } from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
 
-export function LibraryView({ isLocal }: { isLocal: boolean }) {
+export function LibraryView({ isLocal, owner }: { isLocal: boolean; owner: string | null }) {
   const [courses, setCourses] = useState<CourseSummary[] | null>(null);
 
   useEffect(() => {
@@ -27,7 +28,8 @@ export function LibraryView({ isLocal }: { isLocal: boolean }) {
     <main id="main" className="mx-auto max-w-6xl p-8">
       <header className="mb-6 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-extrabold tracking-tight">Your courses</h1>
+          <BrandMark className="size-10 text-lg" />
+          <h1 className="text-3xl font-extrabold tracking-tight">{owner ? `${owner}’s Courses` : "Your courses"}</h1>
           {isLocal && <LocalModeBadge />}
         </div>
         <div className="flex items-center gap-2">

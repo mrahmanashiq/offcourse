@@ -121,7 +121,7 @@ function TagsDialog({ open, onOpenChange, course, onSave }: {
     onOpenChange(v);
   }
   function addTag() {
-    const t = input.trim().toLowerCase().replace(/\s+/g, "-");
+    const t = input.trim();
     if (t && !tags.includes(t)) setTags([...tags, t]);
     setInput("");
   }

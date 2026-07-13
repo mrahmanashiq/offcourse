@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Pin, Archive, FolderOpen, PenLine, TrendingUp, ShieldCheck } from "lucide-react";
+import { Pin, Archive, FolderOpen, PenLine, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import type { CourseSummary } from "@/server/courseTypes";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CourseCardMenu } from "./CourseCardMenu";
 import { AddCourseButton } from "./AddCourseButton";
+
+const PAGE_SIZE = 12;
 
 type SortKey = "recent" | "added" | "title" | "progress";
 const SORT_LABELS: Record<SortKey, string> = {
@@ -55,6 +57,7 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [showArchived, setShowArchived] = useState(false);
   const [now, setNow] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
   const [rove, setRove] = useState(0);
   const cardRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
@@ -82,6 +85,13 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
     });
   }, [courses, query, sort, selectedTags, showArchived]);
 
+  const totalPages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
+  const pageItems = useMemo(() => shown.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [shown, page]);
+
+  // Filters changing resets to page 1; clamp if the current page fell out of range.
+  useEffect(() => { setPage(1); }, [query, sort, selectedTags, showArchived]);
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
+
   function toggleTag(t: string) {
     setSelectedTags((prev) => {
       const n = new Set(prev);
@@ -90,11 +100,11 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
     });
   }
 
-  // Keep the roving-focus index valid when filters change the visible set.
-  useEffect(() => { setRove((r) => (r >= shown.length ? 0 : r)); }, [shown.length]);
+  // Keep the roving-focus index valid within the current page.
+  useEffect(() => { setRove((r) => (r >= pageItems.length ? 0 : r)); }, [pageItems.length]);
 
   function focusCard(i: number) {
-    const n = shown.length;
+    const n = pageItems.length;
     if (n === 0) return;
     const clamped = ((i % n) + n) % n; // wrap around
     setRove(clamped);
@@ -107,7 +117,7 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
       case "ArrowRight": case "ArrowDown": case "j": e.preventDefault(); focusCard(idx + 1); break;
       case "ArrowLeft": case "ArrowUp": case "k": e.preventDefault(); focusCard(idx - 1); break;
       case "Home": e.preventDefault(); focusCard(0); break;
-      case "End": e.preventDefault(); focusCard(shown.length - 1); break;
+      case "End": e.preventDefault(); focusCard(pageItems.length - 1); break;
     }
   }
 
@@ -151,9 +161,9 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
             );
           })}
           {selectedTags.size > 0 && (
-            <button type="button" onClick={() => setSelectedTags(new Set())} className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline">
+            <Button variant="ghost" size="sm" className="h-7 rounded-full px-3 text-xs text-muted-foreground" onClick={() => setSelectedTags(new Set())}>
               Clear
-            </button>
+            </Button>
           )}
           {archivedCount > 0 && (
             <button
@@ -188,7 +198,7 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
           aria-label="Your courses"
           onKeyDown={onGridKey}
         >
-          {shown.map((c, i) => {
+          {pageItems.map((c, i) => {
             const grad = gradientFor(c.title);
             const state = c.percent === 100 ? "complete" : c.percent > 0 ? "progress" : "none";
             return (
@@ -284,7 +294,53 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
           })}
         </div>
       )}
+
+      {shown.length > 0 && totalPages > 1 && (
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      )}
     </>
+  );
+}
+
+// Windowed page tokens: 1 … (p-1) p (p+1) … last, collapsing when few pages.
+function pageTokens(current: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const out: (number | "…")[] = [1];
+  const lo = Math.max(2, current - 1);
+  const hi = Math.min(total - 1, current + 1);
+  if (lo > 2) out.push("…");
+  for (let p = lo; p <= hi; p++) out.push(p);
+  if (hi < total - 1) out.push("…");
+  out.push(total);
+  return out;
+}
+
+function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
+  return (
+    <nav className="mt-8 flex items-center justify-center gap-1.5" aria-label="Pagination">
+      <Button variant="outline" size="icon" className="size-9 rounded-full" onClick={() => onChange(page - 1)} disabled={page === 1} aria-label="Previous page">
+        <ChevronLeft className="size-4" />
+      </Button>
+      {pageTokens(page, totalPages).map((t, i) =>
+        t === "…" ? (
+          <span key={`gap-${i}`} className="px-1 text-sm text-muted-foreground" aria-hidden="true">…</span>
+        ) : (
+          <Button
+            key={t}
+            variant={t === page ? "default" : "ghost"}
+            size="icon"
+            className="size-9 rounded-full text-sm tabular-nums"
+            aria-current={t === page ? "page" : undefined}
+            onClick={() => onChange(t)}
+          >
+            {t}
+          </Button>
+        ),
+      )}
+      <Button variant="outline" size="icon" className="size-9 rounded-full" onClick={() => onChange(page + 1)} disabled={page === totalPages} aria-label="Next page">
+        <ChevronRight className="size-4" />
+      </Button>
+    </nav>
   );
 }
 

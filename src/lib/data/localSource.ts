@@ -38,7 +38,7 @@ function getDB() {
 const pk = (courseId: string, lessonKey: string) => `${courseId}:${lessonKey}`;
 const uuid = () => crypto.randomUUID();
 const normalizeTags = (tags: string[]) =>
-  Array.from(new Set(tags.map((t) => t.trim().toLowerCase().replace(/\s+/g, "-")).filter(Boolean)));
+  Array.from(new Set(tags.map((t) => t.trim()).filter(Boolean)));
 
 async function patchCourse(id: string, patch: Partial<CourseRec>) {
   const db = await getDB();

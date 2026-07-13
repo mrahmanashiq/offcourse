@@ -69,7 +69,7 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
     setNoteTags(courseId, lessonKey, next).catch(() => { /* ignore */ });
   }
   function addTag() {
-    const t = tagInput.trim().toLowerCase().replace(/\s+/g, "-");
+    const t = tagInput.trim();
     if (t && !tags.includes(t)) commitTags([...tags, t]);
     setTagInput("");
   }
