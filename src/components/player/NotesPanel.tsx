@@ -37,6 +37,23 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
 
   function onChange(v: string) { setValue(v); setStatus("saving"); debouncedSave(v); }
 
+  // A frame screenshot captured in the player is appended to the note as an image.
+  useEffect(() => {
+    function onImage(e: Event) {
+      const url = (e as CustomEvent<string>).detail;
+      if (!url) return;
+      setMode("write");
+      setValue((prev) => {
+        const next = `${prev}${prev === "" || prev.endsWith("\n") ? "" : "\n\n"}![frame](${url})\n\n`;
+        setStatus("saving");
+        debouncedSave(next);
+        return next;
+      });
+    }
+    window.addEventListener("offcourse:note-image", onImage as EventListener);
+    return () => window.removeEventListener("offcourse:note-image", onImage as EventListener);
+  }, [debouncedSave]);
+
   function exportMd() {
     const blob = new Blob([value], { type: "text/markdown" });
     const a = document.createElement("a");
