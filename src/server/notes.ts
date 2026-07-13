@@ -10,6 +10,19 @@ export async function getNote(courseId: string, lessonKey: string): Promise<stri
     eq(notes.userId, userId), eq(notes.courseId, courseId), eq(notes.lessonKey, lessonKey)));
   return n?.content ?? "";
 }
+export async function getNoteTags(courseId: string, lessonKey: string): Promise<string[]> {
+  const userId = await requireUserId();
+  const [n] = await db.select().from(notes).where(and(
+    eq(notes.userId, userId), eq(notes.courseId, courseId), eq(notes.lessonKey, lessonKey)));
+  return n?.tags ?? [];
+}
+export async function setNoteTags(courseId: string, lessonKey: string, tags: string[]) {
+  const userId = await requireUserId();
+  const [n] = await db.select().from(notes).where(and(
+    eq(notes.userId, userId), eq(notes.courseId, courseId), eq(notes.lessonKey, lessonKey)));
+  if (n) await db.update(notes).set({ tags, updatedAt: new Date() }).where(and(eq(notes.id, n.id), eq(notes.userId, userId)));
+  else await db.insert(notes).values({ userId, courseId, lessonKey, tags });
+}
 export async function getCourseNotes(courseId: string): Promise<Record<string, string>> {
   const userId = await requireUserId();
   const rows = await db.select().from(notes).where(and(eq(notes.userId, userId), eq(notes.courseId, courseId)));

@@ -61,6 +61,7 @@ export const notes = pgTable("notes", {
   courseId: uuid("courseId").notNull().references(() => courses.id, { onDelete: "cascade" }),
   lessonKey: text("lessonKey").notNull(),
   content: text("content").default("").notNull(),
+  tags: jsonb("tags").$type<string[]>().default([]).notNull(),
   updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
 }, (t) => ({
   uniqueNote: unique().on(t.userId, t.courseId, t.lessonKey),

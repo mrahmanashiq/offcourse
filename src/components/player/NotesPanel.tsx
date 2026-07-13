@@ -2,8 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Bold, Italic, Code, List, Clock } from "lucide-react";
-import { getNote, saveNote } from "@/server/notes";
+import rehypeRaw from "rehype-raw";
+import { Bold, Italic, Code, List, Clock, Highlighter, X } from "lucide-react";
+import { getNote, saveNote, getNoteTags, setNoteTags } from "@/server/notes";
 import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
 import { formatTimestamp } from "@/lib/formatTimestamp";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,9 @@ function tsToSeconds(ts: string): number {
   const p = ts.split(":").map(Number);
   return p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : p[0] * 60 + p[1];
 }
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
 export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
   courseId: string; lessonKey: string; lessonTitle: string;
@@ -24,11 +28,14 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
   const [value, setValue] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [mode, setMode] = useState<"write" | "preview">("write");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const taRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    setStatus("idle"); setValue(""); setMode("write");
+    setStatus("idle"); setValue(""); setMode("write"); setTags([]); setTagInput("");
     getNote(courseId, lessonKey).then(setValue).catch(() => setStatus("error"));
+    getNoteTags(courseId, lessonKey).then(setTags).catch(() => { /* ignore */ });
   }, [courseId, lessonKey]);
 
   const debouncedSave = useDebouncedCallback((v: string) => {
@@ -36,6 +43,20 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
   }, 800);
 
   function onChange(v: string) { setValue(v); setStatus("saving"); debouncedSave(v); }
+
+  function commitTags(next: string[]) {
+    setTags(next);
+    setNoteTags(courseId, lessonKey, next).catch(() => { /* ignore */ });
+  }
+  function addTag() {
+    const t = tagInput.trim().toLowerCase().replace(/\s+/g, "-");
+    if (t && !tags.includes(t)) commitTags([...tags, t]);
+    setTagInput("");
+  }
+  function onTagKey(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addTag(); }
+    else if (e.key === "Backspace" && tagInput === "" && tags.length) commitTags(tags.slice(0, -1));
+  }
 
   // A frame screenshot captured in the player is appended to the note as an image.
   useEffect(() => {
@@ -45,8 +66,7 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
       setMode("write");
       setValue((prev) => {
         const next = `${prev}${prev === "" || prev.endsWith("\n") ? "" : "\n\n"}![frame](${url})\n\n`;
-        setStatus("saving");
-        debouncedSave(next);
+        setStatus("saving"); debouncedSave(next);
         return next;
       });
     }
@@ -62,14 +82,13 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
     a.click(); URL.revokeObjectURL(a.href);
   }
 
-  function replaceRange(from: number, to: number, insert: string, selectStart: number, selectEnd: number) {
+  function replaceRange(from: number, to: number, insert: string, selStart: number, selEnd: number) {
     onChange(value.slice(0, from) + insert + value.slice(to));
     requestAnimationFrame(() => {
       const ta = taRef.current;
-      if (ta) { ta.focus(); ta.setSelectionRange(selectStart, selectEnd); }
+      if (ta) { ta.focus(); ta.setSelectionRange(selStart, selEnd); }
     });
   }
-
   function surround(marker: string) {
     const ta = taRef.current; if (!ta) return;
     const s = ta.selectionStart, e = ta.selectionEnd;
@@ -93,8 +112,9 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
     replaceRange(s, e, stamp, s + stamp.length, s + stamp.length);
   }
 
-  // Make [mm:ss] timestamps clickable in the preview (jump the video).
-  const previewSrc = value.replace(/\[(\d{1,2}:\d{2}(?::\d{2})?)\]/g, (_m, ts) => `[${ts}](#t=${tsToSeconds(ts)})`);
+  const previewSrc = value
+    .replace(/\[(\d{1,2}:\d{2}(?::\d{2})?)\]/g, (_m, ts) => `[${ts}](#t=${tsToSeconds(ts)})`)
+    .replace(/==([^=\n]+)==/g, (_m, t) => `<mark>${escapeHtml(t)}</mark>`);
 
   const seg = "px-2.5 py-1 text-xs font-semibold transition-colors";
 
@@ -120,11 +140,33 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
         </div>
       </div>
 
+      {/* Tags */}
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-border px-4 py-2">
+        {tags.map((t) => (
+          <span key={t} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+            {t}
+            <button type="button" onClick={() => commitTags(tags.filter((x) => x !== t))} aria-label={`Remove tag ${t}`} className="text-primary/70 hover:text-destructive" suppressHydrationWarning>
+              <X className="size-3" />
+            </button>
+          </span>
+        ))}
+        <input
+          value={tagInput}
+          onChange={(e) => setTagInput(e.target.value)}
+          onKeyDown={onTagKey}
+          onBlur={addTag}
+          placeholder={tags.length ? "Add tag" : "Add tags (press Enter)…"}
+          className="min-w-[100px] flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+          aria-label="Add a tag"
+        />
+      </div>
+
       {mode === "write" ? (
         <>
           <div className="flex items-center gap-1 border-b border-border px-3 py-2">
             <button type="button" className={toolBtn} title="Bold" onClick={() => surround("**")} suppressHydrationWarning><Bold className="size-4" /></button>
             <button type="button" className={toolBtn} title="Italic" onClick={() => surround("*")} suppressHydrationWarning><Italic className="size-4" /></button>
+            <button type="button" className={toolBtn} title="Highlight" onClick={() => surround("==")} suppressHydrationWarning><Highlighter className="size-4" /></button>
             <button type="button" className={toolBtn} title="Inline code" onClick={() => surround("`")} suppressHydrationWarning><Code className="size-4" /></button>
             <button type="button" className={toolBtn} title="Bullet list" onClick={() => prefixLines("- ")} suppressHydrationWarning><List className="size-4" /></button>
             <span className="mx-1 h-5 w-px bg-border" />
@@ -136,7 +178,7 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
             ref={taRef}
             className="min-h-[180px] w-full resize-y border-0 bg-transparent p-4 text-sm leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
             value={value}
-            placeholder="Write your notes here… (Markdown supported, auto-saves as you type)"
+            placeholder="Write your notes here… (Markdown supported, ==highlight==, auto-saves)"
             onChange={(e) => onChange(e.target.value)}
           />
         </>
@@ -146,6 +188,7 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
             <div className="prose prose-sm max-w-none dark:prose-invert">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]}
                 components={{
                   a({ href, children }) {
                     if (href?.startsWith("#t=")) {
