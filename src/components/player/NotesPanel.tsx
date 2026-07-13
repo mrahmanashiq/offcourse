@@ -78,7 +78,7 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
   }
 
   // A frame screenshot captured in the player is stored out-of-line and referenced
-  // by a short token, so the editor shows `![frame](img://…)` — not a base64 wall.
+  // by a short token, so the editor shows `![frame](img://…)` - not a base64 wall.
   useEffect(() => {
     async function onImage(e: Event) {
       const url = (e as CustomEvent<string>).detail;
@@ -220,7 +220,7 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
                       // eslint-disable-next-line @next/next/no-img-element -- local/data-URL screenshot
                       return <img src={s} alt={alt || ""} className="my-2 max-w-full rounded-lg border border-border" />;
                     }
-                    // Unresolvable image — just show the raw markdown reference, no broken icon.
+                    // Unresolvable image - just show the raw markdown reference, no broken icon.
                     return <code className="text-xs text-muted-foreground">![{alt || "screenshot"}]({s})</code>;
                   },
                   a({ href, children }) {

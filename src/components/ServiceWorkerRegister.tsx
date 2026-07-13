@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 
-// Registers the offline service worker. Production only — a SW in `next dev`
+// Registers the offline service worker. Production only - a SW in `next dev`
 // causes stale-chunk headaches and offers no benefit while iterating.
 export function ServiceWorkerRegister() {
   useEffect(() => {

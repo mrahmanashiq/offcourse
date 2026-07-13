@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 // The app targets Chrome/Edge (File System Access API), both of which render PDFs
-// natively. We show the local file via a blob URL in an <iframe> — no react-pdf /
+// natively. We show the local file via a blob URL in an <iframe> - no react-pdf /
 // pdfjs-dist. This also works fully offline; the previous pdfjs setup fetched its
 // worker from a CDN, which would fail without a network connection.
 export function PdfView({ file }: { file: File }) {

@@ -55,7 +55,7 @@ describe("parseCourse", () => {
   });
 });
 
-describe("parseCourse — subtitles", () => {
+describe("parseCourse - subtitles", () => {
   const withSubs: RawEntry[] = [
     { name: "M", relPath: "M", isDir: true, children: [
       { name: "1. Intro.mp4", relPath: "M/1. Intro.mp4", isDir: false },
@@ -72,7 +72,7 @@ describe("parseCourse — subtitles", () => {
   });
 });
 
-describe("parseCourse — deep nesting (real course shape)", () => {
+describe("parseCourse - deep nesting (real course shape)", () => {
   const nested: RawEntry[] = [
     { name: "Videos", relPath: "Videos", isDir: true, children: [
       { name: "2. Tense", relPath: "Videos/2. Tense", isDir: true, children: [

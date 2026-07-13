@@ -119,7 +119,7 @@ export function StatsDashboard({ data, learner }: { data: StatsData; learner: st
               <Tile icon={CircleCheck} value={<>{totals.lessonsCompleted}<span className="text-base font-normal text-muted-foreground"> / {totals.totalLessons}</span></>} label="Lessons completed" />
               <Tile icon={GraduationCap} value={totals.coursesCompleted} label="Courses completed" />
               <Tile icon={BookOpen} value={totals.coursesInProgress} label="In progress" />
-              <Tile icon={Flame} value={now === null ? "—" : current} label={current === 1 ? "day streak" : "day streak"} />
+              <Tile icon={Flame} value={now === null ? "-" : current} label={current === 1 ? "day streak" : "day streak"} />
             </div>
 
             <div className="mt-3 grid gap-3 lg:grid-cols-3">
@@ -184,7 +184,7 @@ export function StatsDashboard({ data, learner }: { data: StatsData; learner: st
                   <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${now === null ? 0 : goalPct}%` }} />
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {now === null ? "…" : <><span className="font-semibold text-foreground tabular-nums">{thisWeek}</span> of {goal} this week{thisWeek >= goal ? " — goal reached 🎉" : ""}</>}
+                  {now === null ? "…" : <><span className="font-semibold text-foreground tabular-nums">{thisWeek}</span> of {goal} this week{thisWeek >= goal ? " - goal reached 🎉" : ""}</>}
                 </p>
               </div>
             </div>
@@ -224,7 +224,7 @@ export function StatsDashboard({ data, learner }: { data: StatsData; learner: st
           </>
         )}
 
-        {/* Backup & restore — always available, including for brand-new accounts. */}
+        {/* Backup & restore - always available, including for brand-new accounts. */}
         <section className="mt-8">
           <DataControls />
         </section>

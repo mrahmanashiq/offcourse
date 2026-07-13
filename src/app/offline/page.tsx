@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Offline — Offcourse" };
+export const metadata: Metadata = { title: "Offline - Offcourse" };
 
 export default function OfflinePage() {
   return (
@@ -9,7 +9,7 @@ export default function OfflinePage() {
       <h1 className="text-xl font-bold">You&rsquo;re offline</h1>
       <p className="text-sm text-muted-foreground">
         Offcourse needs a connection to load your library and progress. Any course videos you&rsquo;ve
-        opened stay on your own drive — reconnect and everything will be here.
+        opened stay on your own drive - reconnect and everything will be here.
       </p>
       <a
         href="/library"

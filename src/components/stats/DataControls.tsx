@@ -56,7 +56,7 @@ export function DataControls() {
         <h2 className="font-semibold">Your data</h2>
       </div>
       <p className="max-w-2xl text-sm text-muted-foreground">
-        Download a full backup — courses, progress, notes and bookmarks — as a single JSON file,
+        Download a full backup - courses, progress, notes and bookmarks - as a single JSON file,
         or restore one on any device. Your video files stay on your drive and are never included.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">

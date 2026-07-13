@@ -11,7 +11,7 @@ const eqStyle = (h: number, delay: number): React.CSSProperties => ({
   height: `${h}px`, transformOrigin: "bottom", animation: "eq 1s ease-in-out infinite", animationDelay: `${delay}s`,
 });
 
-// At-a-glance lesson type, Udemy-style: a bare faded glyph (no boxy chip) —
+// At-a-glance lesson type, Udemy-style: a bare faded glyph (no boxy chip) -
 // play = video, document = PDF/doc. Distinct shapes read even at a glance.
 function KindIcon({ kind }: { kind: Lesson["kind"] }) {
   const base = "size-4 shrink-0";

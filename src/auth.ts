@@ -7,8 +7,8 @@ import { authConfig } from "@/auth.config";
 // --- Auth env diagnostics ---------------------------------------------------
 // Runs once per cold start. Prints which auth-related env vars are present so
 // the server logs immediately reveal whether a missing secret/credential is
-// behind the `error=Configuration` page. Values are never logged — only
-// SET/MISSING — so this is safe to keep in place while diagnosing.
+// behind the `error=Configuration` page. Values are never logged - only
+// SET/MISSING - so this is safe to keep in place while diagnosing.
 console.info(
   "[auth][env] AUTH_SECRET=%s AUTH_GOOGLE_ID=%s AUTH_GOOGLE_SECRET=%s DATABASE_URL=%s NODE_ENV=%s AUTH_URL=%s",
   process.env.AUTH_SECRET ? "SET" : "MISSING",

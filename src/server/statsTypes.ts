@@ -6,7 +6,7 @@ export type StatsData = {
     coursesCompleted: number;
     coursesInProgress: number;
   };
-  /** ms timestamps of every completed lesson — bucketed by local day on the client. */
+  /** ms timestamps of every completed lesson - bucketed by local day on the client. */
   completions: number[];
   inProgress: {
     id: string;

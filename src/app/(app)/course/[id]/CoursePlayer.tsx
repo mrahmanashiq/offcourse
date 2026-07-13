@@ -29,7 +29,7 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
 
   const flat = useMemo(() => tree.modules.flatMap((m) => m.lessons), [tree]);
   const requestedKey = useSearchParams().get("lesson");
-  // Open the requested lesson (e.g. from search), else "continue learning" —
+  // Open the requested lesson (e.g. from search), else "continue learning" -
   // the first lesson that isn't completed yet.
   const [active, setActive] = useState<Lesson | null>(() => {
     const requested = requestedKey ? flat.find((l) => l.key === requestedKey) : undefined;
@@ -57,7 +57,7 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
       await saveHandle(courseId, h);
       setHandle(h); setNeedsReopen(false);
     } catch (e) {
-      // User cancelling the picker throws AbortError — ignore it; surface anything else.
+      // User cancelling the picker throws AbortError - ignore it; surface anything else.
       if ((e as Error).name !== "AbortError") alert("Could not open folder: " + (e as Error).message);
     }
   }, [courseId]);
@@ -70,7 +70,7 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
   const exportAllNotes = useCallback(async () => {
     const all = await getCourseNotes(courseId);
     if (Object.keys(all).length === 0) { alert("No notes to export yet."); return; }
-    let md = `# ${tree.title} — Notes\n\n`;
+    let md = `# ${tree.title} - Notes\n\n`;
     for (const m of tree.modules) {
       const withNotes = m.lessons.filter((l) => all[l.key]?.trim());
       if (withNotes.length === 0) continue;

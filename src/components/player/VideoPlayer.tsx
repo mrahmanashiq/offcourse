@@ -116,7 +116,7 @@ export function VideoPlayer({ src, tracks = [], startAt, onSaveProgress, onCompl
     try {
       const url = c.toDataURL("image/jpeg", 0.7);
       window.dispatchEvent(new CustomEvent("offcourse:note-image", { detail: url }));
-    } catch { /* tainted canvas — ignore */ }
+    } catch { /* tainted canvas - ignore */ }
   }
   function togglePlay() {
     const v = document.querySelector("video");
@@ -181,7 +181,7 @@ export function VideoPlayer({ src, tracks = [], startAt, onSaveProgress, onCompl
         )}
       </div>
 
-      {/* Extra controls — an opaque card-surface toolbar (a translucent tint over
+      {/* Extra controls - an opaque card-surface toolbar (a translucent tint over
           the black stage read as a muddy grey in light mode). */}
       <div className="flex flex-wrap items-center gap-2 border-t border-border bg-card px-3 py-2.5 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1"><Repeat className="size-3.5" /> A–B loop</span>

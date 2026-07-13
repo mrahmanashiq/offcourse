@@ -9,7 +9,7 @@ import Google from "next-auth/providers/google";
  */
 export const authConfig: NextAuthConfig = {
   providers: [Google],
-  // Verbose Auth.js logs — opt-in via env so it can be toggled on Vercel
+  // Verbose Auth.js logs - opt-in via env so it can be toggled on Vercel
   // (Project → Settings → Environment Variables → AUTH_DEBUG=true) without a
   // code change. Safe to leave on while diagnosing the sign-in flow.
   debug: process.env.AUTH_DEBUG === "true",

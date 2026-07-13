@@ -14,7 +14,7 @@ function strArray(v: unknown): string[] {
 /**
  * Validate and normalize an untrusted parsed-JSON object into an ExportBundle.
  * Throws a human-readable Error on structural problems; individual rows missing
- * required identifiers are rejected (this is the user's own backup — strictness
+ * required identifiers are rejected (this is the user's own backup - strictness
  * is a feature, not friction). Optional fields fall back to safe defaults.
  */
 export function parseBundle(raw: unknown): ExportBundle {

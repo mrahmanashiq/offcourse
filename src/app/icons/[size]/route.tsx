@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-// Generated brand icons for the manifest / favicon / apple-touch — full-bleed
+// Generated brand icons for the manifest / favicon / apple-touch - full-bleed
 // so the 512 doubles as a maskable icon (the OS applies its own shape).
 const SIZES = new Set([32, 180, 192, 512]);
 

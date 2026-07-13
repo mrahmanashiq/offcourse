@@ -1,7 +1,7 @@
 import { openDB, type IDBPDatabase } from "idb";
 
 // Local-only mode: screenshot frames live in this device's IndexedDB (account
-// mode stores them server-side instead — see @/server/noteImages). Both are
+// mode stores them server-side instead - see @/server/noteImages). Both are
 // reached through the DataSource facade; components never import this directly.
 const DB = "offcourse-note-images";
 const STORE = "images";

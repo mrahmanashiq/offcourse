@@ -24,19 +24,19 @@ function GithubMark({ className }: { className?: string }) {
 }
 
 const privacy = [
-  { icon: HardDrive, title: "Files never leave your device", desc: "Videos stream straight from your drive via the File System Access API. Nothing is uploaded — not even multi-gigabyte courses." },
+  { icon: HardDrive, title: "Files never leave your device", desc: "Videos stream straight from your drive via the File System Access API. Nothing is uploaded - not even multi-gigabyte courses." },
   { icon: KeyRound, title: "You control the access", desc: "Offcourse only reads the folder you pick, only while you use it. The permission lives in your browser and you can revoke it anytime." },
   { icon: EyeOff, title: "No ads, no trackers", desc: "No analytics scripts and no third-party trackers watching what you learn. Only your progress, notes, and bookmarks sync to your account." },
   { icon: GithubMark, title: "Open source & auditable", desc: "Every line is public under the MIT license. Read it, self-host it, and verify the privacy claims for yourself." },
 ];
 
 const features = [
-  { icon: FolderOpen, title: "Open any folder", desc: "Subfolders become modules and videos become lessons — a course sidebar is built for you automatically." },
+  { icon: FolderOpen, title: "Open any folder", desc: "Subfolders become modules and videos become lessons - a course sidebar is built for you automatically." },
   { icon: Gauge, title: "Progress that follows you", desc: "Resumes your exact timestamp and tracks completed lessons across every device you sign in on." },
-  { icon: MonitorPlay, title: "A real player", desc: "Playback speed, picture-in-picture, captions, and keyboard shortcuts — powered by Vidstack." },
+  { icon: MonitorPlay, title: "A real player", desc: "Playback speed, picture-in-picture, captions, and keyboard shortcuts - powered by Vidstack." },
   { icon: NotebookPen, title: "Markdown notes", desc: "Take notes beside the video, autosaved as you type. Export a lesson or the whole course to .md." },
   { icon: Bookmark, title: "Timestamp bookmarks", desc: "Mark the moments that matter and jump right back to them in one click." },
-  { icon: FileText, title: "Inline PDFs", desc: "Course PDFs and slides open right inside the player — no context switching." },
+  { icon: FileText, title: "Inline PDFs", desc: "Course PDFs and slides open right inside the player - no context switching." },
 ];
 
 export default async function Landing() {
@@ -75,7 +75,7 @@ export default async function Landing() {
               A private home for the courses you already downloaded
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-pretty text-lg text-muted-foreground">
-              Point Offcourse at a folder of course videos and get a real learning experience — modules, progress, notes, and bookmarks. Your video files never leave your device.
+              Point Offcourse at a folder of course videos and get a real learning experience - modules, progress, notes, and bookmarks. Your video files never leave your device.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Button asChild size="lg">
@@ -92,14 +92,14 @@ export default async function Landing() {
         </div>
       </section>
 
-      {/* Privacy — the centerpiece */}
+      {/* Privacy - the centerpiece */}
       <section className="border-y border-border/60 bg-card/40">
         <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
           <Reveal className="mx-auto max-w-2xl text-center">
             <Badge variant="secondary" className="mb-3 gap-1"><ShieldCheck className="size-3" /> Privacy by design</Badge>
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Your data stays yours</h2>
             <p className="mt-3 text-muted-foreground">
-              Offcourse is built so your course videos never touch a server. Only lightweight metadata — titles, progress, notes, and bookmarks — syncs to your account so you can pick up on any device.
+              Offcourse is built so your course videos never touch a server. Only lightweight metadata - titles, progress, notes, and bookmarks - syncs to your account so you can pick up on any device.
             </p>
           </Reveal>
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

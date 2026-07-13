@@ -62,7 +62,7 @@ export function Heatmap({ completions, year }: { completions: number[]; year: nu
 
   return (
     <div className="w-full">
-      {/* month labels — mirrors the grid row structure so they stay aligned.
+      {/* month labels - mirrors the grid row structure so they stay aligned.
           The row needs an explicit height because its cells only hold an
           absolutely-positioned label; without it the row collapses and the
           month text overlaps the first grid row. */}
@@ -79,7 +79,7 @@ export function Heatmap({ completions, year }: { completions: number[]; year: nu
           })}
         </div>
       </div>
-      {/* grid — week columns share the width (flex-1), cells stay square */}
+      {/* grid - week columns share the width (flex-1), cells stay square */}
       <div className="flex w-full items-stretch gap-[2px]">
         <div className="flex w-6 shrink-0 flex-col gap-[2px] text-[9px] leading-none text-muted-foreground">
           {["", "Mon", "", "Wed", "", "Fri", ""].map((d, i) => (

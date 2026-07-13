@@ -18,7 +18,7 @@ export async function getStats(): Promise<StatsData> {
     byCourse.set(p.courseId, arr);
   }
 
-  // Every completed lesson's timestamp — drives the streak, heatmap, and weekly goal.
+  // Every completed lesson's timestamp - drives the streak, heatmap, and weekly goal.
   const completions = prog
     .filter((p) => p.completed && p.completedAt)
     .map((p) => p.completedAt!.getTime());

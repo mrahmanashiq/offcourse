@@ -1,7 +1,7 @@
 import type { CourseTree } from "@/lib/course/types";
 
 // A full, portable snapshot of one user's account data. Dates are ISO strings so
-// the bundle is plain JSON. The FS folder handle is intentionally excluded — it's
+// the bundle is plain JSON. The FS folder handle is intentionally excluded - it's
 // device-specific and non-serializable; imported courses re-prompt for the folder.
 export type ExportBundle = {
   app: "offcourse";

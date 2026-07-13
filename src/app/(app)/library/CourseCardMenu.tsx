@@ -30,7 +30,7 @@ export function CourseCardMenu({ course }: { course: CourseSummary }) {
     startTransition(async () => { await fn(); invalidateData(); });
 
   function onRemove() {
-    if (!confirm(`Remove “${course.title}” from your library?\n\nYour video files stay on your drive — only this library entry is removed.`)) return;
+    if (!confirm(`Remove “${course.title}” from your library?\n\nYour video files stay on your drive - only this library entry is removed.`)) return;
     startTransition(async () => {
       await deleteCourse(course.id);
       try { await deleteHandle(course.id); } catch { /* handle may not exist on this device */ }
@@ -199,7 +199,7 @@ function CoverDialog({ open, onOpenChange, course, onSave }: {
             // eslint-disable-next-line @next/next/no-img-element -- local data-URL cover
             <img src={preview} alt="" className="aspect-video w-full object-cover" />
           ) : (
-            <div className="grid aspect-video w-full place-items-center text-sm text-muted-foreground">No cover — a color tile is shown</div>
+            <div className="grid aspect-video w-full place-items-center text-sm text-muted-foreground">No cover - a color tile is shown</div>
           )}
         </div>
         <input ref={fileRef} type="file" accept="image/*" onChange={onFile} className="hidden" />

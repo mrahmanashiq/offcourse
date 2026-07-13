@@ -61,7 +61,7 @@ export function LessonView({
         } else if (lesson.kind === "doc") {
           const u = URL.createObjectURL(f); urls.push(u); setDocUrl(u);
         }
-      } catch { /* file missing / unreadable — leave the stage empty */ }
+      } catch { /* file missing / unreadable - leave the stage empty */ }
     })();
     return () => { cancelled = true; urls.forEach((u) => URL.revokeObjectURL(u)); };
   }, [handle, lesson]);

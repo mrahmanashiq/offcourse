@@ -217,7 +217,7 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
                   ref={(el) => { cardRefs.current[i] = el; }}
                   tabIndex={i === rove ? 0 : -1}
                   onFocus={() => setRove(i)}
-                  aria-label={`${c.title} — ${c.percent}% complete${c.pinned ? ", pinned" : ""}${c.archived ? ", archived" : ""}`}
+                  aria-label={`${c.title} - ${c.percent}% complete${c.pinned ? ", pinned" : ""}${c.archived ? ", archived" : ""}`}
                 >
                   {c.thumbnail ? (
                     <div className="relative h-28 bg-black">
@@ -346,7 +346,7 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
 
 function Onboarding() {
   const steps = [
-    { icon: FolderOpen, title: "Add a course folder", text: "Pick any folder of videos, PDFs, and subtitles. It's read straight from your drive — nothing is uploaded." },
+    { icon: FolderOpen, title: "Add a course folder", text: "Pick any folder of videos, PDFs, and subtitles. It's read straight from your drive - nothing is uploaded." },
     { icon: PenLine, title: "Watch & take notes", text: "Timestamped notes and highlights, bookmarks, playback speed, and captions." },
     { icon: TrendingUp, title: "Track your progress", text: "Streaks, an activity heatmap, weekly goals, and a certificate when you finish." },
   ];
@@ -354,7 +354,7 @@ function Onboarding() {
     <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-8 text-center">
       <h2 className="text-2xl font-extrabold tracking-tight">Welcome to Offcourse</h2>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-        Turn any folder of videos into a course you can actually track — fully offline.
+        Turn any folder of videos into a course you can actually track - fully offline.
       </p>
       <ol className="my-8 grid gap-4 text-left sm:grid-cols-3">
         {steps.map((s, i) => (

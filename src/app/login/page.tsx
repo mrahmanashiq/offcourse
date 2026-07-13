@@ -39,7 +39,7 @@ export default async function LoginPage() {
 
           <LocalModeButton />
           <p className="text-xs text-muted-foreground">
-            Local mode keeps your courses, progress and notes on this device only — no account, nothing synced.
+            Local mode keeps your courses, progress and notes on this device only - no account, nothing synced.
           </p>
         </CardContent>
       </Card>

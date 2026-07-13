@@ -15,7 +15,7 @@ export default auth((req) => {
     pathname === "/sw.js" ||
     pathname.startsWith("/icons/") ||
     pathname.startsWith("/api/auth");
-  // Local-only users have no session but a valid cookie — let them through.
+  // Local-only users have no session but a valid cookie - let them through.
   if (!isAuthed && !isLocal && !isPublic) {
     const url = new URL("/login", req.nextUrl.origin);
     return Response.redirect(url);

@@ -50,7 +50,7 @@ export async function importData(raw: unknown): Promise<ImportResult> {
   const userId = await requireUserId();
   const bundle = parseBundle(raw); // throws on malformed input
 
-  // 1. Courses — merge by id. Update rows I own; insert unknown ids with their
+  // 1. Courses - merge by id. Update rows I own; insert unknown ids with their
   //    original id (onConflictDoNothing means I can never overwrite another
   //    user's course even if the file names their id).
   for (const c of bundle.courses) {
@@ -70,7 +70,7 @@ export async function importData(raw: unknown): Promise<ImportResult> {
     } else if (existing.userId === userId) {
       await db.update(courses).set(fields).where(eq(courses.id, c.id));
     }
-    // else: this id belongs to another user — skip (never overwrite).
+    // else: this id belongs to another user - skip (never overwrite).
   }
 
   // 2. Child rows only for courses that are now mine (referential + ownership safety).
