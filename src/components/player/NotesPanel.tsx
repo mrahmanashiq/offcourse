@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Bold, Italic, Code, List, Clock } from "lucide-react";
 import { getNote, saveNote } from "@/server/notes";
 import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
 import { formatTimestamp } from "@/lib/formatTimestamp";
@@ -9,6 +10,13 @@ import { cn } from "@/lib/utils";
 
 const ghostBtn =
   "inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-default disabled:bg-muted disabled:text-muted-foreground disabled:opacity-70";
+const toolBtn =
+  "inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
+
+function tsToSeconds(ts: string): number {
+  const p = ts.split(":").map(Number);
+  return p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : p[0] * 60 + p[1];
+}
 
 export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
   courseId: string; lessonKey: string; lessonTitle: string;
@@ -37,19 +45,39 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
     a.click(); URL.revokeObjectURL(a.href);
   }
 
+  function replaceRange(from: number, to: number, insert: string, selectStart: number, selectEnd: number) {
+    onChange(value.slice(0, from) + insert + value.slice(to));
+    requestAnimationFrame(() => {
+      const ta = taRef.current;
+      if (ta) { ta.focus(); ta.setSelectionRange(selectStart, selectEnd); }
+    });
+  }
+
+  function surround(marker: string) {
+    const ta = taRef.current; if (!ta) return;
+    const s = ta.selectionStart, e = ta.selectionEnd;
+    const sel = value.slice(s, e);
+    replaceRange(s, e, `${marker}${sel}${marker}`, s + marker.length, s + marker.length + sel.length);
+  }
+  function prefixLines(prefix: string) {
+    const ta = taRef.current; if (!ta) return;
+    const s = ta.selectionStart, e = ta.selectionEnd;
+    const lineStart = value.lastIndexOf("\n", s - 1) + 1;
+    const block = value.slice(lineStart, e);
+    const prefixed = block.split("\n").map((l) => prefix + l).join("\n");
+    replaceRange(lineStart, e, prefixed, lineStart, lineStart + prefixed.length);
+  }
   function insertTimestamp() {
     const video = document.querySelector("video");
     const stamp = `[${formatTimestamp(Math.floor(video?.currentTime ?? 0))}] `;
     const ta = taRef.current;
-    if (!ta) { onChange(value + stamp); return; }
-    const start = ta.selectionStart ?? value.length;
-    const end = ta.selectionEnd ?? value.length;
-    onChange(value.slice(0, start) + stamp + value.slice(end));
-    requestAnimationFrame(() => {
-      ta.focus();
-      ta.setSelectionRange(start + stamp.length, start + stamp.length);
-    });
+    const s = ta?.selectionStart ?? value.length;
+    const e = ta?.selectionEnd ?? value.length;
+    replaceRange(s, e, stamp, s + stamp.length, s + stamp.length);
   }
+
+  // Make [mm:ss] timestamps clickable in the preview (jump the video).
+  const previewSrc = value.replace(/\[(\d{1,2}:\d{2}(?::\d{2})?)\]/g, (_m, ts) => `[${ts}](#t=${tsToSeconds(ts)})`);
 
   const seg = "px-2.5 py-1 text-xs font-semibold transition-colors";
 
@@ -77,10 +105,14 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
 
       {mode === "write" ? (
         <>
-          <div className="flex gap-2 px-4 pt-3">
-            <button className={ghostBtn} onClick={insertTimestamp} title="Insert the current video time" suppressHydrationWarning>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 15 14" /></svg>
-              Timestamp
+          <div className="flex items-center gap-1 border-b border-border px-3 py-2">
+            <button type="button" className={toolBtn} title="Bold" onClick={() => surround("**")} suppressHydrationWarning><Bold className="size-4" /></button>
+            <button type="button" className={toolBtn} title="Italic" onClick={() => surround("*")} suppressHydrationWarning><Italic className="size-4" /></button>
+            <button type="button" className={toolBtn} title="Inline code" onClick={() => surround("`")} suppressHydrationWarning><Code className="size-4" /></button>
+            <button type="button" className={toolBtn} title="Bullet list" onClick={() => prefixLines("- ")} suppressHydrationWarning><List className="size-4" /></button>
+            <span className="mx-1 h-5 w-px bg-border" />
+            <button type="button" className={ghostBtn} title="Insert the current video time" onClick={insertTimestamp} suppressHydrationWarning>
+              <Clock className="size-3.5" /> Timestamp
             </button>
           </div>
           <textarea
@@ -93,9 +125,34 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
         </>
       ) : (
         <div className="min-h-[180px] p-4">
-          {value.trim()
-            ? <div className="prose prose-sm max-w-none dark:prose-invert"><ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown></div>
-            : <p className="text-muted-foreground">Nothing to preview yet.</p>}
+          {value.trim() ? (
+            <div className="prose prose-sm max-w-none dark:prose-invert">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  a({ href, children }) {
+                    if (href?.startsWith("#t=")) {
+                      const seconds = Number(href.slice(3));
+                      return (
+                        <button
+                          type="button"
+                          className="font-medium text-primary hover:underline"
+                          onClick={() => window.dispatchEvent(new CustomEvent("offcourse:seek", { detail: seconds }))}
+                        >
+                          {children}
+                        </button>
+                      );
+                    }
+                    return <a href={href} target="_blank" rel="noreferrer">{children}</a>;
+                  },
+                }}
+              >
+                {previewSrc}
+              </ReactMarkdown>
+            </div>
+          ) : (
+            <p className="text-muted-foreground">Nothing to preview yet.</p>
+          )}
         </div>
       )}
     </section>

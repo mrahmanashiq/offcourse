@@ -10,6 +10,13 @@ export async function getNote(courseId: string, lessonKey: string): Promise<stri
     eq(notes.userId, userId), eq(notes.courseId, courseId), eq(notes.lessonKey, lessonKey)));
   return n?.content ?? "";
 }
+export async function getCourseNotes(courseId: string): Promise<Record<string, string>> {
+  const userId = await requireUserId();
+  const rows = await db.select().from(notes).where(and(eq(notes.userId, userId), eq(notes.courseId, courseId)));
+  const out: Record<string, string> = {};
+  for (const r of rows) if (r.content && r.content.trim()) out[r.lessonKey] = r.content;
+  return out;
+}
 export async function saveNote(courseId: string, lessonKey: string, content: string) {
   const userId = await requireUserId();
   const [n] = await db.select().from(notes).where(and(

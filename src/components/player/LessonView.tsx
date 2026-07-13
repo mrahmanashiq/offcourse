@@ -24,11 +24,20 @@ export function LessonView({
   const [file, setFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [docUrl, setDocUrl] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
+
+  // Autoplay countdown before advancing to the next lesson.
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown <= 0) { setCountdown(null); onNext(); return; }
+    const t = setTimeout(() => setCountdown((c) => (c === null ? null : c - 1)), 1000);
+    return () => clearTimeout(t);
+  }, [countdown, onNext]);
 
   useEffect(() => {
     let cancelled = false;
     let url: string | null = null;
-    setFile(null); setVideoUrl(null); setDocUrl(null);
+    setFile(null); setVideoUrl(null); setDocUrl(null); setCountdown(null);
     fileFromRelPath(handle, lesson.relPath)
       .then((f) => {
         if (cancelled) return; // lesson changed before the file resolved
@@ -47,7 +56,7 @@ export function LessonView({
 
   function onVideoComplete() {
     markComplete(true);
-    if (autoplay && hasNext) onNext();
+    if (autoplay && hasNext) setCountdown(5);
   }
 
   return (
@@ -55,7 +64,17 @@ export function LessonView({
       {moduleName && <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">{moduleName}</p>}
       <h1 className="mb-4 text-[22px] font-bold leading-tight tracking-tight">{lesson.title}</h1>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-black shadow-2xl">
+        {countdown !== null && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-black/75 text-white backdrop-blur-sm">
+            <p className="text-xs uppercase tracking-widest text-white/60">Up next</p>
+            <p className="text-2xl font-bold">Next lesson in {countdown}…</p>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={() => setCountdown(null)}>Cancel</Button>
+              <Button onClick={() => { setCountdown(null); onNext(); }}>Play now</Button>
+            </div>
+          </div>
+        )}
         {lesson.kind === "video" && videoUrl && (
           <VideoPlayer
             src={videoUrl}
