@@ -214,6 +214,17 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw]}
                 components={{
+                  img({ src, alt }) {
+                    if (!src || typeof src !== "string") {
+                      return (
+                        <span className="my-1 inline-flex items-center gap-1.5 rounded-md border border-dashed border-border px-2.5 py-1.5 align-middle text-xs text-muted-foreground">
+                          🖼️ {alt || "Screenshot"} unavailable on this device
+                        </span>
+                      );
+                    }
+                    // eslint-disable-next-line @next/next/no-img-element -- local/data-URL screenshot
+                    return <img src={src} alt={alt || ""} className="my-2 max-w-full rounded-lg border border-border" />;
+                  },
                   a({ href, children }) {
                     if (href?.startsWith("#t=")) {
                       const seconds = Number(href.slice(3));
