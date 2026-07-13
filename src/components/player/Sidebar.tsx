@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { PlayCircle, FileText } from "lucide-react";
 import type { CourseTree, Lesson } from "@/lib/course/types";
 import { cn } from "@/lib/utils";
 
@@ -10,11 +11,20 @@ const eqStyle = (h: number, delay: number): React.CSSProperties => ({
   height: `${h}px`, transformOrigin: "bottom", animation: "eq 1s ease-in-out infinite", animationDelay: `${delay}s`,
 });
 
-function kindDot(kind: Lesson["kind"]): string {
-  if (kind === "pdf") return "bg-[#e0625a]";
-  if (kind === "video") return "bg-primary";
-  if (kind === "doc") return "bg-amber-500";
-  return "bg-muted-foreground";
+// A clear, at-a-glance type marker per lesson (video vs PDF vs doc), Udemy-style:
+// a tinted rounded chip with a distinct icon, instead of an easily-missed dot.
+function KindChip({ kind }: { kind: Lesson["kind"] }) {
+  const chip = "grid size-5 shrink-0 place-items-center rounded";
+  if (kind === "video") {
+    return <span className={cn(chip, "bg-primary/10 text-primary")} role="img" aria-label="Video"><PlayCircle className="size-3.5" /></span>;
+  }
+  if (kind === "pdf") {
+    return <span className={cn(chip, "bg-[#e0625a]/15 text-[#e0625a]")} role="img" aria-label="PDF"><FileText className="size-3.5" /></span>;
+  }
+  if (kind === "doc") {
+    return <span className={cn(chip, "bg-amber-500/15 text-amber-600")} role="img" aria-label="Document"><FileText className="size-3.5" /></span>;
+  }
+  return <span className={cn(chip, "bg-muted text-muted-foreground")} role="img" aria-label="File"><FileText className="size-3.5" /></span>;
 }
 
 export function Sidebar({
@@ -107,17 +117,20 @@ export function Sidebar({
                           </span>
                         </button>
                         <button className="flex min-w-0 flex-1 items-center gap-2 py-2 text-left" onClick={() => onSelect(l)} suppressHydrationWarning>
-                          {isActive && l.kind === "video" && (
-                            <span className="inline-flex h-3.5 shrink-0 items-end gap-[2px]" aria-hidden="true">
-                              <span data-eqbar className={EQ_BAR} style={eqStyle(7, 0)} />
-                              <span data-eqbar className={EQ_BAR} style={eqStyle(14, 0.2)} />
-                              <span data-eqbar className={EQ_BAR} style={eqStyle(10, 0.4)} />
+                          {isActive && l.kind === "video" ? (
+                            <span className="grid size-5 shrink-0 place-items-center rounded bg-primary/10" aria-label="Now playing" role="img">
+                              <span className="inline-flex h-3 items-end gap-[2px]" aria-hidden="true">
+                                <span data-eqbar className={EQ_BAR} style={eqStyle(6, 0)} />
+                                <span data-eqbar className={EQ_BAR} style={eqStyle(11, 0.2)} />
+                                <span data-eqbar className={EQ_BAR} style={eqStyle(8, 0.4)} />
+                              </span>
                             </span>
+                          ) : (
+                            <KindChip kind={l.kind} />
                           )}
                           <span className={cn("min-w-0 flex-1 truncate text-[13px] leading-[1.35]", isActive ? "font-semibold text-foreground" : "text-muted-foreground", isDone && "text-muted-foreground line-through opacity-60")}>
                             <span className="tabular-nums text-muted-foreground">{start + li + 1}.</span> {l.title}
                           </span>
-                          <span className={cn("size-[7px] shrink-0 rounded-sm", kindDot(l.kind))} aria-hidden="true" />
                         </button>
                       </li>
                     );
