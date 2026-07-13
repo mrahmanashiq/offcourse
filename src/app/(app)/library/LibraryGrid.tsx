@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { Pin, Archive } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Pin, Archive, FolderOpen, PenLine, TrendingUp, ShieldCheck } from "lucide-react";
 import type { CourseSummary } from "@/server/courseTypes";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import { CourseCardMenu } from "./CourseCardMenu";
+import { AddCourseButton } from "./AddCourseButton";
 
 type SortKey = "recent" | "added" | "title" | "progress";
 const SORT_LABELS: Record<SortKey, string> = {
@@ -54,6 +55,8 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [showArchived, setShowArchived] = useState(false);
   const [now, setNow] = useState<number | null>(null);
+  const [rove, setRove] = useState(0);
+  const cardRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => { setNow(Date.now()); }, []);
 
@@ -85,6 +88,27 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
       if (n.has(t)) n.delete(t); else n.add(t);
       return n;
     });
+  }
+
+  // Keep the roving-focus index valid when filters change the visible set.
+  useEffect(() => { setRove((r) => (r >= shown.length ? 0 : r)); }, [shown.length]);
+
+  function focusCard(i: number) {
+    const n = shown.length;
+    if (n === 0) return;
+    const clamped = ((i % n) + n) % n; // wrap around
+    setRove(clamped);
+    cardRefs.current[clamped]?.focus();
+  }
+  function onGridKey(e: React.KeyboardEvent<HTMLDivElement>) {
+    const idx = cardRefs.current.indexOf(e.target as HTMLAnchorElement);
+    if (idx === -1) return; // focus is on a menu button etc., not a card
+    switch (e.key) {
+      case "ArrowRight": case "ArrowDown": case "j": e.preventDefault(); focusCard(idx + 1); break;
+      case "ArrowLeft": case "ArrowUp": case "k": e.preventDefault(); focusCard(idx - 1); break;
+      case "Home": e.preventDefault(); focusCard(0); break;
+      case "End": e.preventDefault(); focusCard(shown.length - 1); break;
+    }
   }
 
   return (
@@ -154,24 +178,37 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
       </p>
 
       {courses.length === 0 ? (
-        <EmptyState title="No courses yet" text='Click "Add course" to open a local course folder.' withIcon />
+        <Onboarding />
       ) : shown.length === 0 ? (
         <EmptyState title="No matches" text="No courses match your search or filters." />
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
-          {shown.map((c) => {
+        <div
+          className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4"
+          role="list"
+          aria-label="Your courses"
+          onKeyDown={onGridKey}
+        >
+          {shown.map((c, i) => {
             const grad = gradientFor(c.title);
             const state = c.percent === 100 ? "complete" : c.percent > 0 ? "progress" : "none";
             return (
               <article
                 key={c.id}
+                role="listitem"
                 className={cn(
                   "group relative overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg focus-within:border-primary",
                   c.pinned ? "border-primary/40" : "border-border",
                   c.archived && "opacity-60",
                 )}
               >
-                <Link href={`/course/${c.id}`} className="flex h-full flex-col">
+                <Link
+                  href={`/course/${c.id}`}
+                  className="flex h-full flex-col rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  ref={(el) => { cardRefs.current[i] = el; }}
+                  tabIndex={i === rove ? 0 : -1}
+                  onFocus={() => setRove(i)}
+                  aria-label={`${c.title} — ${c.percent}% complete${c.pinned ? ", pinned" : ""}${c.archived ? ", archived" : ""}`}
+                >
                   {c.thumbnail ? (
                     <div className="relative h-28 bg-black">
                       {/* eslint-disable-next-line @next/next/no-img-element -- local data-URL thumbnail */}
@@ -248,6 +285,39 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
         </div>
       )}
     </>
+  );
+}
+
+function Onboarding() {
+  const steps = [
+    { icon: FolderOpen, title: "Add a course folder", text: "Pick any folder of videos, PDFs, and subtitles. It's read straight from your drive — nothing is uploaded." },
+    { icon: PenLine, title: "Watch & take notes", text: "Timestamped notes and highlights, bookmarks, playback speed, and captions." },
+    { icon: TrendingUp, title: "Track your progress", text: "Streaks, an activity heatmap, weekly goals, and a certificate when you finish." },
+  ];
+  return (
+    <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-8 text-center">
+      <h2 className="text-2xl font-extrabold tracking-tight">Welcome to Offcourse</h2>
+      <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+        Turn any folder of videos into a course you can actually track — fully offline.
+      </p>
+      <ol className="my-8 grid gap-4 text-left sm:grid-cols-3">
+        {steps.map((s, i) => (
+          <li key={s.title} className="flex flex-col gap-2 rounded-xl border border-border/70 bg-background p-4">
+            <div className="flex items-center gap-2">
+              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">{i + 1}</span>
+              <s.icon className="size-4 text-primary" aria-hidden="true" />
+            </div>
+            <p className="text-sm font-bold leading-tight">{s.title}</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">{s.text}</p>
+          </li>
+        ))}
+      </ol>
+      <AddCourseButton />
+      <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+        <ShieldCheck className="size-3.5 text-success" aria-hidden="true" />
+        Your files never leave your device.
+      </p>
+    </div>
   );
 }
 

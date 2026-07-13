@@ -126,7 +126,7 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
           Lesson Notes
         </h3>
         <div className="inline-flex items-center gap-3">
-          <span className={cn("text-xs font-semibold transition-colors", status === "saved" ? "text-success" : status === "saving" ? "text-muted-foreground" : status === "error" ? "text-destructive" : "text-transparent")}>
+          <span role="status" aria-live="polite" className={cn("text-xs font-semibold transition-colors", status === "saved" ? "text-success" : status === "saving" ? "text-muted-foreground" : status === "error" ? "text-destructive" : "text-transparent")}>
             {status === "saving" ? "Saving…" : status === "saved" ? "✓ Saved" : status === "error" ? "Save failed" : "·"}
           </span>
           <div className="inline-flex overflow-hidden rounded-md border border-border" role="tablist">
