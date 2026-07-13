@@ -39,6 +39,9 @@ export async function listCourses(): Promise<CourseSummary[]> {
       id: c.id,
       title: c.title,
       thumbnail: c.thumbnail,
+      tags: c.tags ?? [],
+      pinned: c.pinned,
+      archived: c.archived,
       percent: Math.round((done / (lessonCount || 1)) * 100),
       lessonCount,
       moduleCount: tree.modules.length,
@@ -48,6 +51,43 @@ export async function listCourses(): Promise<CourseSummary[]> {
     });
   }
   return result;
+}
+
+export async function setCoursePinned(id: string, pinned: boolean): Promise<void> {
+  const userId = await requireUserId();
+  await db.update(courses).set({ pinned }).where(and(eq(courses.id, id), eq(courses.userId, userId)));
+  revalidatePath("/library");
+}
+
+export async function setCourseArchived(id: string, archived: boolean): Promise<void> {
+  const userId = await requireUserId();
+  await db.update(courses).set({ archived }).where(and(eq(courses.id, id), eq(courses.userId, userId)));
+  revalidatePath("/library");
+}
+
+export async function setCourseTags(id: string, tags: string[]): Promise<void> {
+  const userId = await requireUserId();
+  // Normalize: lowercase-kebab, trimmed, deduped, non-empty.
+  const clean = Array.from(new Set(
+    tags.map((t) => t.trim().toLowerCase().replace(/\s+/g, "-")).filter(Boolean),
+  ));
+  await db.update(courses).set({ tags: clean }).where(and(eq(courses.id, id), eq(courses.userId, userId)));
+  revalidatePath("/library");
+}
+
+export async function setCourseThumbnail(id: string, thumbnail: string | null): Promise<void> {
+  const userId = await requireUserId();
+  await db.update(courses).set({ thumbnail }).where(and(eq(courses.id, id), eq(courses.userId, userId)));
+  revalidatePath("/library");
+}
+
+// Persist manual title/order overrides. Lesson keys are preserved, so progress,
+// notes and bookmarks (keyed by lessonKey) survive a rename or reorder.
+export async function saveCourseStructure(id: string, structure: CourseTree): Promise<void> {
+  const userId = await requireUserId();
+  await db.update(courses).set({ structureJson: structure })
+    .where(and(eq(courses.id, id), eq(courses.userId, userId)));
+  revalidatePath("/library");
 }
 
 export async function deleteCourse(id: string): Promise<void> {

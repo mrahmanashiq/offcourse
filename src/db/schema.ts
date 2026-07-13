@@ -40,6 +40,9 @@ export const courses = pgTable("courses", {
   thumbnail: text("thumbnail"),
   folderName: text("folderName").notNull(),
   structureJson: jsonb("structureJson").notNull(),
+  tags: jsonb("tags").$type<string[]>().default([]).notNull(),
+  pinned: boolean("pinned").default(false).notNull(),
+  archived: boolean("archived").default(false).notNull(),
   lastOpenedAt: timestamp("lastOpenedAt", { mode: "date" }),
   createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
 });

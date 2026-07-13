@@ -1,10 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { Pin, Archive } from "lucide-react";
 import type { CourseSummary } from "@/server/courseTypes";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
@@ -49,14 +51,25 @@ function timeAgo(ts: number, now: number): string {
 export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("recent");
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [showArchived, setShowArchived] = useState(false);
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => { setNow(Date.now()); }, []);
 
+  const allTags = useMemo(() => Array.from(new Set(courses.flatMap((c) => c.tags))).sort(), [courses]);
+  const archivedCount = useMemo(() => courses.filter((c) => c.archived).length, [courses]);
+
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = q ? courses.filter((c) => c.title.toLowerCase().includes(q)) : courses;
-    return [...filtered].sort((a, b) => {
+    const filtered = courses.filter((c) => {
+      if (c.archived && !showArchived) return false;
+      if (q && !c.title.toLowerCase().includes(q)) return false;
+      if (selectedTags.size && !c.tags.some((t) => selectedTags.has(t))) return false;
+      return true;
+    });
+    return filtered.sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1; // pinned always first
       switch (sort) {
         case "title": return a.title.localeCompare(b.title);
         case "progress": return b.percent - a.percent;
@@ -64,7 +77,15 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
         default: return (b.lastOpenedAt ?? b.createdAt) - (a.lastOpenedAt ?? a.createdAt);
       }
     });
-  }, [courses, query, sort]);
+  }, [courses, query, sort, selectedTags, showArchived]);
+
+  function toggleTag(t: string) {
+    setSelectedTags((prev) => {
+      const n = new Set(prev);
+      if (n.has(t)) n.delete(t); else n.add(t);
+      return n;
+    });
+  }
 
   return (
     <>
@@ -86,6 +107,46 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
         <SortMenu value={sort} onChange={setSort} />
       </div>
 
+      {(allTags.length > 0 || archivedCount > 0) && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          {allTags.map((t) => {
+            const on = selectedTags.has(t);
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => toggleTag(t)}
+                aria-pressed={on}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  on ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t}
+              </button>
+            );
+          })}
+          {selectedTags.size > 0 && (
+            <button type="button" onClick={() => setSelectedTags(new Set())} className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline">
+              Clear
+            </button>
+          )}
+          {archivedCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowArchived((v) => !v)}
+              aria-pressed={showArchived}
+              className={cn(
+                "ml-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                showArchived ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Archive className="size-3.5" /> {showArchived ? "Hiding" : "Show"} archived ({archivedCount})
+            </button>
+          )}
+        </div>
+      )}
+
       <p className="mb-6 text-[13px] text-muted-foreground">
         {courses.length === 0
           ? "No courses yet"
@@ -95,7 +156,7 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
       {courses.length === 0 ? (
         <EmptyState title="No courses yet" text='Click "Add course" to open a local course folder.' withIcon />
       ) : shown.length === 0 ? (
-        <EmptyState title="No matches" text={`Nothing matches "${query}".`} />
+        <EmptyState title="No matches" text="No courses match your search or filters." />
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
           {shown.map((c) => {
@@ -104,7 +165,11 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
             return (
               <article
                 key={c.id}
-                className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg focus-within:border-primary"
+                className={cn(
+                  "group relative overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg focus-within:border-primary",
+                  c.pinned ? "border-primary/40" : "border-border",
+                  c.archived && "opacity-60",
+                )}
               >
                 <Link href={`/course/${c.id}`} className="flex h-full flex-col">
                   {c.thumbnail ? (
@@ -131,6 +196,16 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
                         </p>
                       </div>
                     </div>
+
+                    {(c.tags.length > 0 || c.archived) && (
+                      <div className="flex flex-wrap gap-1">
+                        {c.archived && <Badge variant="outline" className="text-[10px]">Archived</Badge>}
+                        {c.tags.slice(0, 3).map((t) => (
+                          <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>
+                        ))}
+                        {c.tags.length > 3 && <Badge variant="outline" className="text-[10px]">+{c.tags.length - 3}</Badge>}
+                      </div>
+                    )}
 
                     <div className="mt-auto flex flex-col gap-1.5">
                       <div className="flex items-center justify-between">
@@ -159,8 +234,13 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
                   </div>
                 </Link>
 
+                {c.pinned && (
+                  <div className="pointer-events-none absolute left-2 top-2 z-[2] grid size-7 place-items-center rounded-full bg-primary text-primary-foreground shadow" title="Pinned" aria-hidden="true">
+                    <Pin className="size-3.5" />
+                  </div>
+                )}
                 <div className="absolute right-2 top-2 z-[2]">
-                  <CourseCardMenu id={c.id} title={c.title} />
+                  <CourseCardMenu course={c} />
                 </div>
               </article>
             );
