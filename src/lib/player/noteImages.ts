@@ -16,7 +16,7 @@ function getDB() {
 const TOKEN_RE = /img:\/\/([\w-]+)/g;
 
 export async function putNoteImage(dataUrl: string): Promise<string> {
-  const id = crypto.randomUUID();
+  const id = crypto.randomUUID().replace(/-/g, "").slice(0, 10); // short, readable token
   await (await getDB()).put(STORE, dataUrl, id);
   return id;
 }

@@ -86,9 +86,9 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
       if (!url) return;
       const id = await putNoteImage(url);
       setImgMap((m) => ({ ...m, [id]: url }));
-      setMode("write");
+      setMode("preview"); // show the captured frame rendered, not the raw token
       setValue((prev) => {
-        const next = `${prev}${prev === "" || prev.endsWith("\n") ? "" : "\n\n"}![frame](img://${id})\n\n`;
+        const next = `${prev}${prev === "" || prev.endsWith("\n") ? "" : "\n\n"}![screenshot](img://${id})\n\n`;
         setStatus("saving"); debouncedSave(next);
         return next;
       });
