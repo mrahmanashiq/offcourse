@@ -181,11 +181,11 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
         </div>
       )}
 
-      <p className="mb-6 text-[13px] text-muted-foreground">
-        {courses.length === 0
-          ? "No courses yet"
-          : `${shown.length} of ${courses.length} course${courses.length === 1 ? "" : "s"}`}
-      </p>
+      {courses.length > 0 && (
+        <p className="mb-6 text-[13px] text-muted-foreground">
+          {`${shown.length} of ${courses.length} course${courses.length === 1 ? "" : "s"}`}
+        </p>
+      )}
 
       {courses.length === 0 ? (
         <Onboarding />
