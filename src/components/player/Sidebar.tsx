@@ -11,20 +11,14 @@ const eqStyle = (h: number, delay: number): React.CSSProperties => ({
   height: `${h}px`, transformOrigin: "bottom", animation: "eq 1s ease-in-out infinite", animationDelay: `${delay}s`,
 });
 
-// A clear, at-a-glance type marker per lesson (video vs PDF vs doc), Udemy-style:
-// a tinted rounded chip with a distinct icon, instead of an easily-missed dot.
-function KindChip({ kind }: { kind: Lesson["kind"] }) {
-  const chip = "grid size-5 shrink-0 place-items-center rounded";
-  if (kind === "video") {
-    return <span className={cn(chip, "bg-primary/10 text-primary")} role="img" aria-label="Video"><PlayCircle className="size-3.5" /></span>;
-  }
-  if (kind === "pdf") {
-    return <span className={cn(chip, "bg-[#e0625a]/15 text-[#e0625a]")} role="img" aria-label="PDF"><FileText className="size-3.5" /></span>;
-  }
-  if (kind === "doc") {
-    return <span className={cn(chip, "bg-amber-500/15 text-amber-600")} role="img" aria-label="Document"><FileText className="size-3.5" /></span>;
-  }
-  return <span className={cn(chip, "bg-muted text-muted-foreground")} role="img" aria-label="File"><FileText className="size-3.5" /></span>;
+// At-a-glance lesson type, Udemy-style: a bare faded glyph (no boxy chip) —
+// play = video, document = PDF/doc. Distinct shapes read even at a glance.
+function KindIcon({ kind }: { kind: Lesson["kind"] }) {
+  const base = "size-4 shrink-0";
+  if (kind === "video") return <PlayCircle className={cn(base, "text-primary/80")} role="img" aria-label="Video" />;
+  if (kind === "pdf") return <FileText className={cn(base, "text-[#e0625a]/90")} role="img" aria-label="PDF" />;
+  if (kind === "doc") return <FileText className={cn(base, "text-amber-600/90")} role="img" aria-label="Document" />;
+  return <FileText className={cn(base, "text-muted-foreground")} role="img" aria-label="File" />;
 }
 
 export function Sidebar({
@@ -118,15 +112,13 @@ export function Sidebar({
                         </button>
                         <button className="flex min-w-0 flex-1 items-center gap-2 py-2 text-left" onClick={() => onSelect(l)} suppressHydrationWarning>
                           {isActive && l.kind === "video" ? (
-                            <span className="grid size-5 shrink-0 place-items-center rounded bg-primary/10" aria-label="Now playing" role="img">
-                              <span className="inline-flex h-3 items-end gap-[2px]" aria-hidden="true">
-                                <span data-eqbar className={EQ_BAR} style={eqStyle(6, 0)} />
-                                <span data-eqbar className={EQ_BAR} style={eqStyle(11, 0.2)} />
-                                <span data-eqbar className={EQ_BAR} style={eqStyle(8, 0.4)} />
-                              </span>
+                            <span className="inline-flex h-4 w-4 shrink-0 items-end justify-center gap-[2px]" aria-label="Now playing" role="img">
+                              <span data-eqbar className={EQ_BAR} style={eqStyle(7, 0)} />
+                              <span data-eqbar className={EQ_BAR} style={eqStyle(13, 0.2)} />
+                              <span data-eqbar className={EQ_BAR} style={eqStyle(9, 0.4)} />
                             </span>
                           ) : (
-                            <KindChip kind={l.kind} />
+                            <KindIcon kind={l.kind} />
                           )}
                           <span className={cn("min-w-0 flex-1 truncate text-[13px] leading-[1.35]", isActive ? "font-semibold text-foreground" : "text-muted-foreground", isDone && "text-muted-foreground line-through opacity-60")}>
                             <span className="tabular-nums text-muted-foreground">{start + li + 1}.</span> {l.title}
