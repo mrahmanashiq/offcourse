@@ -2,6 +2,7 @@ import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import type { CourseTree } from "@/lib/course/types";
 import type { CourseSummary } from "@/server/courseTypes";
 import type { SearchIndex } from "@/server/searchTypes";
+import { putLocalNoteImage, getLocalNoteImage } from "@/lib/player/noteImages";
 import type { DataSource, ProgressMap, BookmarkRow, UpsertCourseInput } from "./source";
 
 type CourseRec = {
@@ -201,6 +202,9 @@ export const localSource: DataSource = {
     const db = await getDB();
     await db.delete("bookmarks", id);
   },
+
+  putNoteImage: putLocalNoteImage,
+  getNoteImage: getLocalNoteImage,
 
   async getSearchIndex(): Promise<SearchIndex> {
     const db = await getDB();

@@ -50,6 +50,10 @@ export interface DataSource {
   listBookmarks(courseId: string, lessonKey: string): Promise<BookmarkRow[]>;
   deleteBookmark(id: string): Promise<void>;
 
+  // Note screenshot images (referenced by an img://<id> token)
+  putNoteImage(dataUrl: string): Promise<string>;
+  getNoteImage(id: string): Promise<string | null>;
+
   // Search
   getSearchIndex(): Promise<SearchIndex>;
 }

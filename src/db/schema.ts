@@ -69,6 +69,15 @@ export const notes = pgTable("notes", {
 }, (t) => ({
   uniqueNote: unique().on(t.userId, t.courseId, t.lessonKey),
 }));
+// Screenshot frames referenced from notes by an `img://<id>` token. Stored
+// server-side (account mode) so they sync with the note; local-only mode keeps
+// them in IndexedDB instead.
+export const noteImages = pgTable("note_images", {
+  id: text("id").primaryKey(),
+  userId: text("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  dataUrl: text("dataUrl").notNull(),
+  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+});
 export const bookmarks = pgTable("bookmarks", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: text("userId").notNull().references(() => users.id, { onDelete: "cascade" }),

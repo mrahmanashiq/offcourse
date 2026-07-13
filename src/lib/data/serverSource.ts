@@ -6,6 +6,7 @@ import { getCourseProgress, saveProgress, setCompleted } from "@/server/progress
 import { getNote, getNoteTags, setNoteTags, getCourseNotes, saveNote } from "@/server/notes";
 import { addBookmark, listBookmarks, deleteBookmark } from "@/server/bookmarks";
 import { getSearchIndex } from "@/server/searchIndex";
+import { putNoteImage, getNoteImage } from "@/server/noteImages";
 import type { DataSource } from "./source";
 
 // Signed-in accounts: everything goes through the existing server actions.
@@ -31,5 +32,7 @@ export const serverSource: DataSource = {
   addBookmark,
   listBookmarks: (courseId, lessonKey) => listBookmarks(courseId, lessonKey),
   deleteBookmark,
+  putNoteImage,
+  getNoteImage,
   getSearchIndex,
 };

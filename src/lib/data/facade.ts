@@ -35,4 +35,17 @@ export const addBookmark: DataSource["addBookmark"] = (c, l, label, t) => src().
 export const listBookmarks: DataSource["listBookmarks"] = (c, l) => src().listBookmarks(c, l);
 export const deleteBookmark: DataSource["deleteBookmark"] = (id) => src().deleteBookmark(id);
 
+export const putNoteImage: DataSource["putNoteImage"] = (dataUrl) => src().putNoteImage(dataUrl);
+export const getNoteImage: DataSource["getNoteImage"] = (id) => src().getNoteImage(id);
+
 export const getSearchIndex: DataSource["getSearchIndex"] = () => src().getSearchIndex();
+
+// Replace every img://<id> token with its inline data URL (for export). Resolves
+// through the active source, so it works in both account and local mode.
+export async function resolveNoteImages(text: string): Promise<string> {
+  const ids = Array.from(new Set(Array.from(text.matchAll(/img:\/\/([\w-]+)/g), (m) => m[1])));
+  if (ids.length === 0) return text;
+  const map = new Map<string, string>();
+  await Promise.all(ids.map(async (id) => { const u = await getNoteImage(id); if (u) map.set(id, u); }));
+  return text.replace(/img:\/\/([\w-]+)/g, (_m, id) => map.get(id) ?? "");
+}
