@@ -9,6 +9,8 @@ import { UnsupportedBrowser } from "@/components/UnsupportedBrowser";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Reveal } from "./Reveal";
+import { HeroShowcase } from "./HeroShowcase";
 
 const REPO = "https://github.com/mrahmanashiq/offcourse";
 
@@ -64,48 +66,51 @@ export default async function Landing() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute left-1/2 top-[-120px] -z-10 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-primary/15 blur-[130px]" />
-        <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:py-28">
-          <Badge variant="outline" className="mb-5 gap-1.5">
-            <ShieldCheck className="size-3.5 text-primary" /> Local-first · MIT licensed
-          </Badge>
-          <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-5xl md:text-[3.5rem] md:leading-[1.05]">
-            A private home for the courses you already downloaded
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-pretty text-lg text-muted-foreground">
-            Point Offcourse at a folder of course videos and get a real learning experience — modules, progress, notes, and bookmarks. Your video files never leave your device.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Button asChild size="lg">
-              <Link href={session ? "/library" : "/login"}>{session ? "Go to your library" : "Get started"}</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <a href={REPO} target="_blank" rel="noreferrer"><GithubMark className="size-4" /> Star on GitHub</a>
-            </Button>
+        <div className="mx-auto max-w-5xl px-6 pb-12 pt-20 text-center sm:pt-28">
+          <div className="mx-auto max-w-3xl">
+            <Badge variant="outline" className="mb-5 gap-1.5">
+              <ShieldCheck className="size-3.5 text-primary" /> Local-first · MIT licensed
+            </Badge>
+            <h1 className="text-balance text-4xl font-extrabold tracking-tight sm:text-5xl md:text-[3.5rem] md:leading-[1.05]">
+              A private home for the courses you already downloaded
+            </h1>
+            <p className="mx-auto mt-5 max-w-xl text-pretty text-lg text-muted-foreground">
+              Point Offcourse at a folder of course videos and get a real learning experience — modules, progress, notes, and bookmarks. Your video files never leave your device.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Button asChild size="lg">
+                <Link href={session ? "/library" : "/login"}>{session ? "Go to your library" : "Get started"}</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <a href={REPO} target="_blank" rel="noreferrer"><GithubMark className="size-4" /> Star on GitHub</a>
+              </Button>
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">Runs in Chrome &amp; Edge · No install · Free &amp; open source</p>
+            <UnsupportedBrowser />
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">Runs in Chrome &amp; Edge · No install · Free &amp; open source</p>
-          <UnsupportedBrowser />
+          <HeroShowcase />
         </div>
       </section>
 
       {/* Privacy — the centerpiece */}
       <section className="border-y border-border/60 bg-card/40">
         <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
-          <div className="mx-auto max-w-2xl text-center">
+          <Reveal className="mx-auto max-w-2xl text-center">
             <Badge variant="secondary" className="mb-3 gap-1"><ShieldCheck className="size-3" /> Privacy by design</Badge>
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Your data stays yours</h2>
             <p className="mt-3 text-muted-foreground">
               Offcourse is built so your course videos never touch a server. Only lightweight metadata — titles, progress, notes, and bookmarks — syncs to your account so you can pick up on any device.
             </p>
-          </div>
+          </Reveal>
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {privacy.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="rounded-xl border border-border bg-background/60 p-5">
+            {privacy.map(({ icon: Icon, title, desc }, i) => (
+              <Reveal key={title} delay={i * 80} className="rounded-xl border border-border bg-background/60 p-5 transition-colors hover:border-primary/40">
                 <div className="mb-3 grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
                   <Icon className="size-5" />
                 </div>
                 <h3 className="font-semibold">{title}</h3>
                 <p className="mt-1.5 text-sm text-muted-foreground">{desc}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -113,28 +118,30 @@ export default async function Landing() {
 
       {/* Features */}
       <section className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Everything you need to actually finish it</h2>
           <p className="mt-3 text-muted-foreground">The structure of a course platform, running entirely on your machine.</p>
-        </div>
+        </Reveal>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map(({ icon: Icon, title, desc }) => (
-            <Card key={title} className="gap-0 py-5 transition-colors hover:border-primary/40">
-              <CardHeader className="gap-2">
-                <div className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <Icon className="size-5" />
-                </div>
-                <CardTitle className="mt-2 text-base">{title}</CardTitle>
-                <CardDescription>{desc}</CardDescription>
-              </CardHeader>
-            </Card>
+          {features.map(({ icon: Icon, title, desc }, i) => (
+            <Reveal key={title} delay={(i % 3) * 80}>
+              <Card className="h-full gap-0 py-5 transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg">
+                <CardHeader className="gap-2">
+                  <div className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
+                    <Icon className="size-5" />
+                  </div>
+                  <CardTitle className="mt-2 text-base">{title}</CardTitle>
+                  <CardDescription>{desc}</CardDescription>
+                </CardHeader>
+              </Card>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-6 pb-20">
-        <div className="relative overflow-hidden rounded-2xl border border-border bg-card px-6 py-14 text-center">
+        <Reveal className="relative overflow-hidden rounded-2xl border border-border bg-card px-6 py-14 text-center">
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-40 bg-gradient-to-b from-primary/10 to-transparent" />
           <h2 className="text-balance text-2xl font-bold tracking-tight sm:text-3xl">Turn that download folder into a course</h2>
           <p className="mx-auto mt-3 max-w-md text-muted-foreground">Free, open source, and private. Open a folder and start learning in seconds.</p>
@@ -146,13 +153,13 @@ export default async function Landing() {
               <a href={REPO} target="_blank" rel="noreferrer"><GithubMark className="size-4" /> View source</a>
             </Button>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Footer */}
       <footer className="border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-6 py-8 text-center text-sm text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
-          <span>Offcourse — a local-first, open-source course player. MIT licensed.</span>
+          <span>Offcourse - a local-first, open-source course player. MIT licensed.</span>
           <div className="flex items-center gap-4">
             <a href={REPO} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">GitHub</a>
             <span>Chrome &amp; Edge</span>
