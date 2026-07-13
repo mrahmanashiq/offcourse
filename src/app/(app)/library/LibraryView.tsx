@@ -11,9 +11,12 @@ import { UnsupportedBrowser } from "@/components/UnsupportedBrowser";
 import { CommandSearchButton } from "@/components/CommandSearchButton";
 import { LocalModeBadge } from "@/components/LocalModeBadge";
 import { BrandMark } from "@/components/BrandMark";
+import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
 
-export function LibraryView({ isLocal, owner }: { isLocal: boolean; owner: string | null }) {
+type SessionUser = { name: string | null; email: string | null; image: string | null };
+
+export function LibraryView({ isLocal, owner, user }: { isLocal: boolean; owner: string | null; user: SessionUser | null }) {
   const [courses, setCourses] = useState<CourseSummary[] | null>(null);
 
   useEffect(() => {
@@ -40,6 +43,7 @@ export function LibraryView({ isLocal, owner }: { isLocal: boolean; owner: strin
             </Button>
           )}
           <AddCourseButton />
+          {user && <UserMenu name={user.name} email={user.email} image={user.image} />}
         </div>
       </header>
       <UnsupportedBrowser />

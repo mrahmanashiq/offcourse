@@ -11,5 +11,8 @@ function firstName(raw: string | null | undefined): string | null {
 export default async function LibraryPage() {
   const session = await auth();
   const owner = firstName(session?.user?.name ?? session?.user?.email);
-  return <LibraryView isLocal={!session?.user?.id} owner={owner} />;
+  const user = session?.user?.id
+    ? { name: session.user.name ?? null, email: session.user.email ?? null, image: session.user.image ?? null }
+    : null;
+  return <LibraryView isLocal={!session?.user?.id} owner={owner} user={user} />;
 }
