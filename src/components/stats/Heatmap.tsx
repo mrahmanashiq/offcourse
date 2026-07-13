@@ -62,8 +62,11 @@ export function Heatmap({ completions, year }: { completions: number[]; year: nu
 
   return (
     <div className="w-full">
-      {/* month labels — mirrors the grid row structure so they stay aligned */}
-      <div className="mb-1 flex w-full gap-[2px]">
+      {/* month labels — mirrors the grid row structure so they stay aligned.
+          The row needs an explicit height because its cells only hold an
+          absolutely-positioned label; without it the row collapses and the
+          month text overlaps the first grid row. */}
+      <div className="mb-1 flex h-3.5 w-full gap-[2px]">
         <div className="w-6 shrink-0" />
         <div className="flex min-w-0 flex-1 gap-[2px]">
           {weeks.map((_, w) => {
