@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { Bold, Italic, Code, List, Clock, Highlighter, X } from "lucide-react";
 import { getNote, saveNote, getNoteTags, setNoteTags } from "@/lib/data/facade";
+import { putNoteImage, getNoteImage, resolveNoteImages } from "@/lib/player/noteImages";
 import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
 import { formatTimestamp } from "@/lib/formatTimestamp";
 import { cn } from "@/lib/utils";
@@ -30,13 +31,32 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [imgMap, setImgMap] = useState<Record<string, string>>({});
   const taRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    setStatus("idle"); setValue(""); setMode("write"); setTags([]); setTagInput("");
+    setStatus("idle"); setValue(""); setMode("write"); setTags([]); setTagInput(""); setImgMap({});
     getNote(courseId, lessonKey).then(setValue).catch(() => setStatus("error"));
     getNoteTags(courseId, lessonKey).then(setTags).catch(() => { /* ignore */ });
   }, [courseId, lessonKey]);
+
+  // Resolve img://<id> screenshot tokens to data URLs for the preview.
+  useEffect(() => {
+    const ids = Array.from(value.matchAll(/img:\/\/([\w-]+)/g), (m) => m[1]);
+    const missing = ids.filter((id) => !(id in imgMap));
+    if (missing.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const loaded = await Promise.all(missing.map(async (id) => [id, await getNoteImage(id)] as const));
+      if (cancelled) return;
+      setImgMap((m) => {
+        const next = { ...m };
+        for (const [id, url] of loaded) if (url) next[id] = url;
+        return next;
+      });
+    })();
+    return () => { cancelled = true; };
+  }, [value, imgMap]);
 
   const debouncedSave = useDebouncedCallback((v: string) => {
     saveNote(courseId, lessonKey, v).then(() => setStatus("saved")).catch(() => setStatus("error"));
@@ -58,14 +78,17 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
     else if (e.key === "Backspace" && tagInput === "" && tags.length) commitTags(tags.slice(0, -1));
   }
 
-  // A frame screenshot captured in the player is appended to the note as an image.
+  // A frame screenshot captured in the player is stored out-of-line and referenced
+  // by a short token, so the editor shows `![frame](img://…)` — not a base64 wall.
   useEffect(() => {
-    function onImage(e: Event) {
+    async function onImage(e: Event) {
       const url = (e as CustomEvent<string>).detail;
       if (!url) return;
+      const id = await putNoteImage(url);
+      setImgMap((m) => ({ ...m, [id]: url }));
       setMode("write");
       setValue((prev) => {
-        const next = `${prev}${prev === "" || prev.endsWith("\n") ? "" : "\n\n"}![frame](${url})\n\n`;
+        const next = `${prev}${prev === "" || prev.endsWith("\n") ? "" : "\n\n"}![frame](img://${id})\n\n`;
         setStatus("saving"); debouncedSave(next);
         return next;
       });
@@ -74,8 +97,9 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
     return () => window.removeEventListener("offcourse:note-image", onImage as EventListener);
   }, [debouncedSave]);
 
-  function exportMd() {
-    const blob = new Blob([value], { type: "text/markdown" });
+  async function exportMd() {
+    const resolved = await resolveNoteImages(value); // inline screenshots for a portable .md
+    const blob = new Blob([resolved], { type: "text/markdown" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `${lessonTitle.replace(/\.[^.]+$/, "")}.md`;
@@ -114,7 +138,8 @@ export function NotesPanel({ courseId, lessonKey, lessonTitle }: {
 
   const previewSrc = value
     .replace(/\[(\d{1,2}:\d{2}(?::\d{2})?)\]/g, (_m, ts) => `[${ts}](#t=${tsToSeconds(ts)})`)
-    .replace(/==([^=\n]+)==/g, (_m, t) => `<mark>${escapeHtml(t)}</mark>`);
+    .replace(/==([^=\n]+)==/g, (_m, t) => `<mark>${escapeHtml(t)}</mark>`)
+    .replace(/img:\/\/([\w-]+)/g, (_m, id) => imgMap[id] ?? ""); // resolve screenshots last
 
   const seg = "px-2.5 py-1 text-xs font-semibold transition-colors";
 

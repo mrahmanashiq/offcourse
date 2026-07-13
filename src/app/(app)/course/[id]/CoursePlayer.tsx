@@ -6,6 +6,7 @@ import type { CourseTree, Lesson } from "@/lib/course/types";
 import { loadHandle, ensureReadPermission, saveHandle } from "@/lib/fs/handleStore";
 import { pickCourseFolder } from "@/lib/fs/readDir";
 import { setCompleted, getCourseNotes } from "@/lib/data/facade";
+import { resolveNoteImages } from "@/lib/player/noteImages";
 import { Sidebar } from "@/components/player/Sidebar";
 import { ReopenPrompt } from "@/components/player/ReopenPrompt";
 import { LessonView } from "@/components/player/LessonView";
@@ -77,6 +78,7 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
       md += `## ${m.title}\n\n`;
       for (const l of withNotes) md += `### ${l.title}\n\n${all[l.key].trim()}\n\n`;
     }
+    md = await resolveNoteImages(md); // inline any screenshot tokens
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([md], { type: "text/markdown" }));
     a.download = `${tree.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-notes.md`;

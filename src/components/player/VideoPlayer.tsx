@@ -26,7 +26,7 @@ function getSavedVolume(): { volume: number; muted: boolean } {
   return { volume: 1, muted: false };
 }
 
-const ctlBtn = "inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-white/80 transition-colors hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10";
+const ctlBtn = "inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-foreground/75 transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-card";
 
 export function VideoPlayer({ src, tracks = [], startAt, onSaveProgress, onComplete }: {
   src: string; startAt: number;
@@ -181,16 +181,16 @@ export function VideoPlayer({ src, tracks = [], startAt, onSaveProgress, onCompl
         )}
       </div>
 
-      {/* Extra controls */}
-      <div className="flex flex-wrap items-center gap-2 bg-black px-3 py-2 text-xs text-white/70">
+      {/* Extra controls — theme-aware so the strip isn't a harsh black band in light mode */}
+      <div className="flex flex-wrap items-center gap-2 border-t border-border bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1"><Repeat className="size-3.5" /> A–B loop</span>
         <button onClick={() => setPoint("a")} className={ctlBtn}>{loop.a === null ? "Set A" : `A ${formatTimestamp(loop.a)}`}</button>
         <button onClick={() => setPoint("b")} disabled={loop.a === null} className={ctlBtn}>{loop.b === null ? "Set B" : `B ${formatTimestamp(loop.b)}`}</button>
         {(loop.a !== null || loop.b !== null) && <button onClick={clearLoop} className={ctlBtn}>Clear</button>}
         {looping && <span className="font-medium text-primary">● looping</span>}
-        <span className="mx-1 h-4 w-px bg-white/15" />
+        <span className="mx-1 h-4 w-px bg-border" />
         <button onClick={screenshot} className={ctlBtn}><Camera className="size-3.5" /> Screenshot → note</button>
-        <button onClick={() => setAudioOnly((v) => !v)} className={cn(ctlBtn, audioOnly && "bg-primary/30 text-white hover:bg-primary/40")}><Headphones className="size-3.5" /> Audio only</button>
+        <button onClick={() => setAudioOnly((v) => !v)} className={cn(ctlBtn, audioOnly && "border-primary/40 bg-primary/15 text-primary hover:bg-primary/25")}><Headphones className="size-3.5" /> Audio only</button>
       </div>
     </div>
   );
