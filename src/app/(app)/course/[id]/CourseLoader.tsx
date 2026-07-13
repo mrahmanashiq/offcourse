@@ -5,6 +5,7 @@ import { getCourse, touchCourse, getCourseProgress } from "@/lib/data/facade";
 import { DATA_CHANGED_EVENT } from "@/lib/data/mode";
 import type { CourseTree } from "@/lib/course/types";
 import { CoursePlayer } from "./CoursePlayer";
+import { PageLoader } from "@/components/PageLoader";
 import { Button } from "@/components/ui/button";
 
 type Progress = Record<string, { positionSeconds: number; completed: boolean }>;
@@ -38,7 +39,7 @@ export function CourseLoader({ courseId }: { courseId: string }) {
   }, [courseId]);
 
   if (state.status === "loading") {
-    return <div className="grid h-dvh place-items-center text-sm text-muted-foreground">Loading course…</div>;
+    return <div className="grid h-dvh place-items-center"><PageLoader label="Loading course…" /></div>;
   }
   if (state.status === "notfound") {
     return (
