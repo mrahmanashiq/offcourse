@@ -55,6 +55,23 @@ describe("parseCourse", () => {
   });
 });
 
+describe("parseCourse — subtitles", () => {
+  const withSubs: RawEntry[] = [
+    { name: "M", relPath: "M", isDir: true, children: [
+      { name: "1. Intro.mp4", relPath: "M/1. Intro.mp4", isDir: false },
+      { name: "1. Intro.srt", relPath: "M/1. Intro.srt", isDir: false },
+      { name: "1. Intro.es.vtt", relPath: "M/1. Intro.es.vtt", isDir: false },
+    ]},
+  ];
+  const lessons = parseCourse("C", withSubs).modules[0].lessons;
+  it("does not list subtitle files as lessons", () => {
+    expect(lessons.map((l) => l.title)).toEqual(["1. Intro.mp4"]);
+  });
+  it("attaches matching subtitles (incl. language variants) to the video", () => {
+    expect(lessons[0].subtitles?.map((s) => s.lang).sort()).toEqual(["en", "es"]);
+  });
+});
+
 describe("parseCourse — deep nesting (real course shape)", () => {
   const nested: RawEntry[] = [
     { name: "Videos", relPath: "Videos", isDir: true, children: [

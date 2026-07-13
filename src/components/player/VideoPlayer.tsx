@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { MediaPlayer, MediaProvider, type MediaPlayerInstance } from "@vidstack/react";
+import { MediaPlayer, MediaProvider, Track, type MediaPlayerInstance } from "@vidstack/react";
 import { DefaultVideoLayout, defaultLayoutIcons } from "@vidstack/react/player/layouts/default";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
@@ -28,8 +28,9 @@ function getSavedVolume(): { volume: number; muted: boolean } {
 
 const ctlBtn = "inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-white/80 transition-colors hover:bg-white/20 disabled:opacity-40 disabled:hover:bg-white/10";
 
-export function VideoPlayer({ src, startAt, onSaveProgress, onComplete }: {
+export function VideoPlayer({ src, tracks = [], startAt, onSaveProgress, onComplete }: {
   src: string; startAt: number;
+  tracks?: { src: string; label: string; lang: string }[];
   onSaveProgress: (seconds: number) => void; onComplete: () => void;
 }) {
   const player = useRef<MediaPlayerInstance>(null);
@@ -155,7 +156,11 @@ export function VideoPlayer({ src, startAt, onSaveProgress, onComplete }: {
           onEnded={onComplete}
           onPause={onPause}
         >
-          <MediaProvider />
+          <MediaProvider>
+            {tracks.map((t, i) => (
+              <Track key={t.src} src={t.src} kind="subtitles" label={t.label} lang={t.lang} default={i === 0} />
+            ))}
+          </MediaProvider>
           <DefaultVideoLayout icons={defaultLayoutIcons} />
         </MediaPlayer>
 

@@ -8,6 +8,7 @@ import { PdfView } from "./PdfView";
 import { NotesPanel } from "./NotesPanel";
 import { BookmarksPanel } from "./BookmarksPanel";
 import { Button } from "@/components/ui/button";
+import { srtToVtt } from "@/lib/player/vtt";
 
 type Prog = { positionSeconds: number; completed: boolean } | undefined;
 
@@ -24,6 +25,7 @@ export function LessonView({
   const [file, setFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [docUrl, setDocUrl] = useState<string | null>(null);
+  const [tracks, setTracks] = useState<{ src: string; label: string; lang: string }[]>([]);
   const [countdown, setCountdown] = useState<number | null>(null);
 
   // Autoplay countdown before advancing to the next lesson.
@@ -36,17 +38,32 @@ export function LessonView({
 
   useEffect(() => {
     let cancelled = false;
-    let url: string | null = null;
-    setFile(null); setVideoUrl(null); setDocUrl(null); setCountdown(null);
-    fileFromRelPath(handle, lesson.relPath)
-      .then((f) => {
+    const urls: string[] = [];
+    setFile(null); setVideoUrl(null); setDocUrl(null); setTracks([]); setCountdown(null);
+    (async () => {
+      try {
+        const f = await fileFromRelPath(handle, lesson.relPath);
         if (cancelled) return; // lesson changed before the file resolved
         setFile(f);
-        if (lesson.kind === "video") { url = URL.createObjectURL(f); setVideoUrl(url); }
-        else if (lesson.kind === "doc") { url = URL.createObjectURL(f); setDocUrl(url); }
-      })
-      .catch(() => { /* file missing / unreadable — leave the stage empty */ });
-    return () => { cancelled = true; if (url) URL.revokeObjectURL(url); };
+        if (lesson.kind === "video") {
+          const u = URL.createObjectURL(f); urls.push(u); setVideoUrl(u);
+          if (lesson.subtitles?.length) {
+            const tr = await Promise.all(lesson.subtitles.map(async (s) => {
+              const sf = await fileFromRelPath(handle, s.relPath);
+              let text = await sf.text();
+              if (s.relPath.toLowerCase().endsWith(".srt")) text = srtToVtt(text);
+              return { src: URL.createObjectURL(new Blob([text], { type: "text/vtt" })), label: s.label, lang: s.lang };
+            }));
+            if (cancelled) { tr.forEach((t) => URL.revokeObjectURL(t.src)); return; }
+            tr.forEach((t) => urls.push(t.src));
+            setTracks(tr);
+          }
+        } else if (lesson.kind === "doc") {
+          const u = URL.createObjectURL(f); urls.push(u); setDocUrl(u);
+        }
+      } catch { /* file missing / unreadable — leave the stage empty */ }
+    })();
+    return () => { cancelled = true; urls.forEach((u) => URL.revokeObjectURL(u)); };
   }, [handle, lesson]);
 
   async function markComplete(value: boolean) {
@@ -78,6 +95,7 @@ export function LessonView({
         {lesson.kind === "video" && videoUrl && (
           <VideoPlayer
             src={videoUrl}
+            tracks={tracks}
             startAt={progress?.positionSeconds ?? 0}
             onSaveProgress={(s) => { saveProgress(courseId, lesson.key, s); }}
             onComplete={onVideoComplete}
