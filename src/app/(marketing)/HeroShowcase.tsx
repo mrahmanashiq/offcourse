@@ -4,19 +4,19 @@ import { cn } from "@/lib/utils";
 // The signature: a raw download folder (monospace file dump) transformed into
 // the actual Offcourse course sidebar. The course rows assemble in on load.
 const rawFiles = [
-  "01 Reasoning Models.mp4",
-  "02 Chain of Thought.mp4",
-  "03 Tools used by LLMs.mp4",
-  "04 Context Engineering.mp4",
-  "slides.pdf",
+  "01 Introduction.mp4",
+  "02 Getting Started.mp4",
+  "03 Core Concepts.mp4",
+  "04 Deep Dive.mp4",
+  "handout.pdf",
 ];
 
 const lessons = [
-  { n: 1, title: "Reasoning Models", kind: "video", active: true },
-  { n: 2, title: "Chain of Thought", kind: "video", active: false },
-  { n: 3, title: "Tools used by LLMs", kind: "video", active: false },
-  { n: 4, title: "Context Engineering", kind: "video", active: false },
-  { n: 5, title: "Slides & resources", kind: "pdf", active: false },
+  { n: 1, title: "Introduction", kind: "video", active: true },
+  { n: 2, title: "Getting Started", kind: "video", active: false },
+  { n: 3, title: "Core Concepts", kind: "video", active: false },
+  { n: 4, title: "Deep Dive", kind: "video", active: false },
+  { n: 5, title: "Handout & resources", kind: "pdf", active: false },
 ] as const;
 
 export function HeroShowcase() {
@@ -30,7 +30,7 @@ export function HeroShowcase() {
         {/* Raw folder */}
         <div className="rounded-xl border border-border/70 bg-background/70 p-4 text-left">
           <div className="mb-3 flex items-center gap-2 font-mono text-xs text-muted-foreground">
-            <Folder className="size-3.5" /> ~/Downloads/AI Course
+            <Folder className="size-3.5" /> ~/Downloads/My Course
           </div>
           <ul className="space-y-1.5 font-mono text-[13px]">
             {rawFiles.map((f) => (
@@ -54,7 +54,7 @@ export function HeroShowcase() {
           <div className="flex items-center justify-between border-b border-border px-3 py-2">
             <span className="flex items-center gap-1.5 text-xs font-bold">
               <span className="grid size-4 place-items-center rounded bg-primary text-[9px] font-extrabold leading-none text-primary-foreground">O</span>
-              AI Course
+              My Course
             </span>
             <span className="text-[10px] tabular-nums text-muted-foreground">3 / 41 · 7%</span>
           </div>
