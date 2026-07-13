@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Heatmap } from "./Heatmap";
 import { CertificateDialog } from "./CertificateDialog";
+import { DataControls } from "./DataControls";
 
 const GOAL_KEY = "offcourse:weeklyGoal";
 
@@ -222,6 +223,11 @@ export function StatsDashboard({ data, learner }: { data: StatsData; learner: st
             )}
           </>
         )}
+
+        {/* Backup & restore — always available, including for brand-new accounts. */}
+        <section className="mt-8">
+          <DataControls />
+        </section>
       </main>
     </div>
   );
