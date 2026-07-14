@@ -1,5 +1,6 @@
 "use client";
-import { LogOut } from "lucide-react";
+import Link from "next/link";
+import { LogOut, Settings } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
@@ -27,6 +28,9 @@ export function UserMenu({ name, email, image }: { name: string | null; email: s
           {email && <span className="truncate text-xs font-normal text-muted-foreground">{email}</span>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/settings"><Settings className="size-4" /> Settings</Link>
+        </DropdownMenuItem>
         <DropdownMenuItem
           className="text-destructive focus:text-destructive"
           onSelect={(e) => { e.preventDefault(); signOutAction(); }}

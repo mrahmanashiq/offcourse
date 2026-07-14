@@ -7,6 +7,19 @@ env.allowLocalModels = false;
 
 let transcriber: any = null;
 
+// Only use WebGPU if a real adapter is available; otherwise a webgpu pipeline
+// fails at inference ("Failed to get GPU adapter"). Fall back to WASM (q8).
+async function pickDevice(): Promise<"webgpu" | "wasm"> {
+  try {
+    const gpu = (self.navigator as any)?.gpu;
+    if (gpu?.requestAdapter) {
+      const adapter = await gpu.requestAdapter();
+      if (adapter) return "webgpu";
+    }
+  } catch { /* no webgpu */ }
+  return "wasm";
+}
+
 self.onmessage = async (e: MessageEvent) => {
   const { audio, model, language } = e.data as { audio: Float32Array; model: string; language?: string };
   try {
@@ -16,11 +29,11 @@ self.onmessage = async (e: MessageEvent) => {
           self.postMessage({ type: "progress", stage: "model", value: Math.round(p.progress ?? 0), file: p.file });
         }
       };
-      const preferWebgpu = "gpu" in (self.navigator ?? {});
+      const device = await pickDevice();
       try {
-        transcriber = await pipeline("automatic-speech-recognition", model, { device: preferWebgpu ? "webgpu" : "wasm", progress_callback });
+        transcriber = await pipeline("automatic-speech-recognition", model, { device, dtype: device === "webgpu" ? "fp32" : "q8", progress_callback });
       } catch {
-        transcriber = await pipeline("automatic-speech-recognition", model, { device: "wasm", progress_callback });
+        transcriber = await pipeline("automatic-speech-recognition", model, { device: "wasm", dtype: "q8", progress_callback });
       }
     }
     self.postMessage({ type: "progress", stage: "transcribe" });

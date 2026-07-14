@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Heatmap } from "./Heatmap";
 import { CertificateDialog } from "./CertificateDialog";
 import { DataControls } from "./DataControls";
+import { useSetting } from "@/lib/settings";
 
 const GOAL_KEY = "offcourse:weeklyGoal";
 
@@ -30,6 +31,8 @@ function Tile({ icon: Icon, value, label }: { icon: React.ComponentType<{ classN
 
 export function StatsDashboard({ data, learner }: { data: StatsData; learner: string }) {
   const { totals, inProgress, completedCourses, completions } = data;
+  const [fullName] = useSetting("fullName");
+  const learnerName = fullName.trim() || learner;
   const [now, setNow] = useState<number | null>(null);
   const [goal, setGoal] = useState(5);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -216,7 +219,7 @@ export function StatsDashboard({ data, learner }: { data: StatsData; learner: st
                 <h2 className="mb-3 font-semibold">Certificates</h2>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {completedCourses.map((c) => (
-                    <CertificateDialog key={c.id} course={c} learner={learner} />
+                    <CertificateDialog key={c.id} course={c} learner={learnerName} />
                   ))}
                 </div>
               </section>

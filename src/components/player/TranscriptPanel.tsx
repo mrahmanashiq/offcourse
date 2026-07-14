@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { FileText, Sparkles, Search, Download } from "lucide-react";
+import { useSetting, isOn } from "@/lib/settings";
 import { getTranscript, saveTranscript } from "@/lib/data/facade";
 import { decodeAudioTo16kMono } from "@/lib/player/decodeAudio";
 import { chunksToVtt, parseVttCues, vttToSrt, type Cue, type Chunk } from "@/lib/player/vttCues";
@@ -25,6 +27,8 @@ export function TranscriptPanel({ courseId, lessonKey, lessonTitle, file }: { co
   const [progress, setProgress] = useState<{ stage: "model" | "transcribe"; value?: number } | null>(null);
   const [error, setError] = useState("");
   const workerRef = useRef<Worker | null>(null);
+  const [ai] = useSetting("aiTranscription");
+  const aiOn = isOn(ai);
 
   useEffect(() => {
     setStatus("loading"); setCues([]); setVtt(""); setQuery(""); setProgress(null); setError("");
@@ -111,15 +115,21 @@ export function TranscriptPanel({ courseId, lessonKey, lessonTitle, file }: { co
         {status === "loading" && <p className="text-sm text-muted-foreground">Loading…</p>}
 
         {status === "idle" && (
-          <div className="flex flex-col items-start gap-2">
+          aiOn ? (
+            <div className="flex flex-col items-start gap-2">
+              <p className="text-sm text-muted-foreground">
+                Generate a searchable transcript for this lesson. It runs on your device; the first run downloads a small model (then cached, works offline).
+              </p>
+              <button className={ghostBtn} onClick={generate} disabled={!file} suppressHydrationWarning>
+                <Sparkles className="size-3.5" /> Generate transcript
+              </button>
+              {!file && <p className="text-xs text-muted-foreground">Waiting for the video to load…</p>}
+            </div>
+          ) : (
             <p className="text-sm text-muted-foreground">
-              Generate a searchable transcript for this lesson. It runs on your device; the first run downloads a small model (then cached, works offline).
+              On-device transcription is turned off. Enable it in <Link href="/settings" className="font-medium text-primary hover:underline">Settings</Link>.
             </p>
-            <button className={ghostBtn} onClick={generate} disabled={!file} suppressHydrationWarning>
-              <Sparkles className="size-3.5" /> Generate transcript
-            </button>
-            {!file && <p className="text-xs text-muted-foreground">Waiting for the video to load…</p>}
-          </div>
+          )
         )}
 
         {status === "generating" && (
