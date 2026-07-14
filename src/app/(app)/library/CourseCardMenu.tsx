@@ -11,6 +11,8 @@ import { deleteHandle, saveHandle } from "@/lib/fs/handleStore";
 import { invalidateData } from "@/lib/data/mode";
 import { pickCourseFolder } from "@/lib/fs/readDir";
 import { imageFileToThumbnail } from "@/lib/thumbnail";
+import { toast } from "@/components/Toast";
+import { confirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,8 +31,14 @@ export function CourseCardMenu({ course }: { course: CourseSummary }) {
   const run = (fn: () => Promise<unknown>) =>
     startTransition(async () => { await fn(); invalidateData(); });
 
-  function onRemove() {
-    if (!confirm(`Remove “${course.title}” from your library?\n\nYour video files stay on your drive - only this library entry is removed.`)) return;
+  async function onRemove() {
+    const ok = await confirmDialog({
+      title: `Remove “${course.title}”?`,
+      body: "Your video files stay on your drive - only this library entry is removed.",
+      confirmText: "Remove",
+      destructive: true,
+    });
+    if (!ok) return;
     startTransition(async () => {
       await deleteCourse(course.id);
       try { await deleteHandle(course.id); } catch { /* handle may not exist on this device */ }
@@ -42,9 +50,9 @@ export function CourseCardMenu({ course }: { course: CourseSummary }) {
     try {
       const h = await pickCourseFolder();
       await saveHandle(course.id, h);
-      alert(`“${course.title}” re-linked to “${h.name}”. Your progress and notes are unchanged.`);
+      toast(`“${course.title}” re-linked to “${h.name}”. Your progress and notes are unchanged.`, "success");
     } catch (e) {
-      if ((e as Error).name !== "AbortError") alert("Could not open folder: " + (e as Error).message);
+      if ((e as Error).name !== "AbortError") toast("Could not open folder: " + (e as Error).message, "error");
     }
   }
 
@@ -183,7 +191,7 @@ function CoverDialog({ open, onOpenChange, course, onSave }: {
     try {
       const thumb = await imageFileToThumbnail(file);
       if (thumb) setPreview(thumb);
-      else alert("Could not read that image.");
+      else toast("Could not read that image.", "error");
     } finally { setBusy(false); if (fileRef.current) fileRef.current.value = ""; }
   }
 

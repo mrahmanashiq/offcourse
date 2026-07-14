@@ -14,6 +14,7 @@ import { PlannerDialog } from "@/components/player/PlannerDialog";
 import { Pomodoro } from "@/components/player/Pomodoro";
 import { KeyboardHelp } from "@/components/player/KeyboardHelp";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { toast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Focus, Minimize2 } from "lucide-react";
 import { formatDuration } from "@/lib/formatDuration";
@@ -76,7 +77,7 @@ export function CoursePlayer({ courseId, tree, initialProgress, initialDurations
       setHandle(h); setNeedsReopen(false);
     } catch (e) {
       // User cancelling the picker throws AbortError - ignore it; surface anything else.
-      if ((e as Error).name !== "AbortError") alert("Could not open folder: " + (e as Error).message);
+      if ((e as Error).name !== "AbortError") toast("Could not open folder: " + (e as Error).message, "error");
     }
   }, [courseId]);
 
@@ -93,7 +94,7 @@ export function CoursePlayer({ courseId, tree, initialProgress, initialDurations
 
   const exportAllNotes = useCallback(async () => {
     const all = await getCourseNotes(courseId);
-    if (Object.keys(all).length === 0) { alert("No notes to export yet."); return; }
+    if (Object.keys(all).length === 0) { toast("No notes to export yet.", "info"); return; }
     let md = `# ${tree.title} - Notes\n\n`;
     for (const m of tree.modules) {
       const withNotes = m.lessons.filter((l) => all[l.key]?.trim());

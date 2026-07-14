@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import { CommandPalette } from "@/components/CommandPalette";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
+import { Toaster } from "@/components/Toast";
+import { ConfirmHost } from "@/components/ConfirmDialog";
 import { DataModeInit } from "@/lib/data/DataModeInit";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -15,6 +17,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {children}
       <CommandPalette />
       <KeyboardShortcuts />
+      <Toaster />
+      <ConfirmHost />
     </>
   );
 }

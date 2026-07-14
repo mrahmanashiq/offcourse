@@ -3,6 +3,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Download, Upload, ShieldCheck } from "lucide-react";
 import { exportData, importData } from "@/server/data";
+import { confirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 
 export function DataControls() {
@@ -35,7 +36,12 @@ export function DataControls() {
     const file = e.target.files?.[0];
     if (fileRef.current) fileRef.current.value = "";
     if (!file) return;
-    if (!confirm("Restore this backup?\n\nCourses, progress and notes with matching IDs are updated (merge); new items are added. This can't be undone.")) return;
+    const ok = await confirmDialog({
+      title: "Restore this backup?",
+      body: "Courses, progress and notes with matching IDs are updated (merge); new items are added. This can't be undone.",
+      confirmText: "Restore",
+    });
+    if (!ok) return;
     setBusy("import"); setMsg(null);
     try {
       const raw = JSON.parse(await file.text());

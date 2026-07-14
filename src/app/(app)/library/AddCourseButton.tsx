@@ -6,6 +6,7 @@ import { saveHandle as persistHandle } from "@/lib/fs/handleStore";
 import { parseCourse } from "@/lib/course/parse";
 import { captureThumbnail } from "@/lib/thumbnail";
 import { upsertCourse } from "@/lib/data/facade";
+import { toast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 
 export function AddCourseButton() {
@@ -24,7 +25,7 @@ export function AddCourseButton() {
       await persistHandle(id, handle);
       router.push(`/course/${id}`);
     } catch (e) {
-      if ((e as Error).name !== "AbortError") alert("Could not open folder: " + (e as Error).message);
+      if ((e as Error).name !== "AbortError") toast("Could not open folder: " + (e as Error).message, "error");
     } finally { setBusy(false); }
   }
   return (
