@@ -30,6 +30,22 @@ function parseTs(s: string): number {
   return parseFloat(parts[0]) || 0;
 }
 
+// Convert our stored WebVTT to SRT (drop the header, number cues, use `,` for ms).
+export function vttToSrt(vtt: string): string {
+  const blocks = vtt.replace(/\r/g, "").split("\n\n").filter((b) => b.includes("-->"));
+  let out = "";
+  let n = 1;
+  for (const b of blocks) {
+    const lines = b.split("\n").filter(Boolean);
+    const timing = lines.find((l) => l.includes("-->"));
+    if (!timing) continue;
+    const text = lines.slice(lines.indexOf(timing) + 1).join("\n");
+    out += `${n}\n${timing.replace(/\./g, ",")}\n${text}\n\n`;
+    n++;
+  }
+  return out;
+}
+
 export function parseVttCues(vtt: string): Cue[] {
   const cues: Cue[] = [];
   for (const block of vtt.replace(/\r/g, "").split("\n\n")) {

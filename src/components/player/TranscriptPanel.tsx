@@ -1,11 +1,14 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { FileText, Sparkles, Search } from "lucide-react";
+import { FileText, Sparkles, Search, Download } from "lucide-react";
 import { getTranscript, saveTranscript } from "@/lib/data/facade";
 import { decodeAudioTo16kMono } from "@/lib/player/decodeAudio";
-import { chunksToVtt, parseVttCues, type Cue, type Chunk } from "@/lib/player/vttCues";
+import { chunksToVtt, parseVttCues, vttToSrt, type Cue, type Chunk } from "@/lib/player/vttCues";
 import { formatTimestamp } from "@/lib/formatTimestamp";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 const MODEL = "Xenova/whisper-base";
@@ -14,26 +17,38 @@ const ghostBtn =
 
 type Status = "idle" | "loading" | "generating" | "ready" | "error";
 
-export function TranscriptPanel({ courseId, lessonKey, file }: { courseId: string; lessonKey: string; file: File | null }) {
+export function TranscriptPanel({ courseId, lessonKey, lessonTitle, file }: { courseId: string; lessonKey: string; lessonTitle: string; file: File | null }) {
   const [status, setStatus] = useState<Status>("loading");
   const [cues, setCues] = useState<Cue[]>([]);
+  const [vtt, setVtt] = useState("");
   const [query, setQuery] = useState("");
   const [progress, setProgress] = useState<{ stage: "model" | "transcribe"; value?: number } | null>(null);
   const [error, setError] = useState("");
   const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
-    setStatus("loading"); setCues([]); setQuery(""); setProgress(null); setError("");
+    setStatus("loading"); setCues([]); setVtt(""); setQuery(""); setProgress(null); setError("");
     let cancelled = false;
     getTranscript(courseId, lessonKey)
-      .then((vtt) => {
+      .then((loaded) => {
         if (cancelled) return;
-        if (vtt) { setCues(parseVttCues(vtt)); setStatus("ready"); }
+        if (loaded) { setVtt(loaded); setCues(parseVttCues(loaded)); setStatus("ready"); }
         else setStatus("idle");
       })
       .catch(() => { if (!cancelled) setStatus("idle"); });
     return () => { cancelled = true; workerRef.current?.terminate(); workerRef.current = null; };
   }, [courseId, lessonKey]);
+
+  function download(format: "srt" | "vtt") {
+    const content = format === "srt" ? vttToSrt(vtt) : vtt;
+    const base = lessonTitle.replace(/\.[^.]+$/, "") || "transcript";
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${base}.${format}`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
 
   async function generate() {
     if (!file) return;
@@ -51,9 +66,9 @@ export function TranscriptPanel({ courseId, lessonKey, file }: { courseId: strin
       if (d.type === "progress") {
         setProgress({ stage: d.stage ?? "transcribe", value: d.value });
       } else if (d.type === "result") {
-        const vtt = chunksToVtt(d.chunks ?? []);
-        saveTranscript(courseId, lessonKey, vtt).catch(() => { /* best-effort */ });
-        setCues(parseVttCues(vtt)); setStatus("ready"); setProgress(null);
+        const newVtt = chunksToVtt(d.chunks ?? []);
+        saveTranscript(courseId, lessonKey, newVtt).catch(() => { /* best-effort */ });
+        setVtt(newVtt); setCues(parseVttCues(newVtt)); setStatus("ready"); setProgress(null);
         worker.terminate(); workerRef.current = null;
       } else if (d.type === "error") {
         setError(d.message || "Transcription failed."); setStatus("error"); setProgress(null);
@@ -72,9 +87,22 @@ export function TranscriptPanel({ courseId, lessonKey, file }: { courseId: strin
       <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/50 px-4 py-3">
         <h3 className="inline-flex items-center gap-2 text-sm font-semibold"><FileText className="size-4 text-muted-foreground" /> Transcript</h3>
         {status === "ready" && cues.length > 0 && (
-          <div className="relative w-44">
-            <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search transcript" className="h-8 pl-7 text-xs" aria-label="Search transcript" />
+          <div className="flex items-center gap-2">
+            <div className="relative w-40">
+              <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search" className="h-8 pl-7 text-xs" aria-label="Search transcript" />
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" title="Download subtitles" aria-label="Download subtitles" suppressHydrationWarning>
+                  <Download className="size-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => download("srt")}>Download .srt</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => download("vtt")}>Download .vtt</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>
