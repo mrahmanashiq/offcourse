@@ -8,7 +8,19 @@ import Google from "next-auth/providers/google";
  * full NextAuth instance read/write the same token shape.
  */
 export const authConfig: NextAuthConfig = {
-  providers: [Google],
+  providers: [
+    Google({
+      // Request YouTube read access (for importing playlists) alongside profile.
+      // offline + consent so Google returns a refresh token we can store/refresh.
+      authorization: {
+        params: {
+          scope: "openid email profile https://www.googleapis.com/auth/youtube.readonly",
+          access_type: "offline",
+          prompt: "consent",
+        },
+      },
+    }),
+  ],
   // Verbose Auth.js logs - opt-in via env so it can be toggled on Vercel
   // (Project → Settings → Environment Variables → AUTH_DEBUG=true) without a
   // code change. Safe to leave on while diagnosing the sign-in flow.

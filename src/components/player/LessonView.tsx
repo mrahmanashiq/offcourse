@@ -18,7 +18,7 @@ export function LessonView({
   courseId, handle, lesson, moduleName, progress, onProgressChange,
   index, total, hasPrev, hasNext, onPrev, onNext, autoplay, onDuration, focus,
 }: {
-  courseId: string; handle: FileSystemDirectoryHandle; lesson: Lesson;
+  courseId: string; handle: FileSystemDirectoryHandle | null; lesson: Lesson;
   moduleName: string | null;
   progress: Prog; onProgressChange: (p: { positionSeconds: number; completed: boolean }) => void;
   index: number; total: number; hasPrev: boolean; hasNext: boolean;
@@ -44,6 +44,10 @@ export function LessonView({
     let cancelled = false;
     const urls: string[] = [];
     setFile(null); setVideoUrl(null); setDocUrl(null); setTracks([]); setCountdown(null);
+    // YouTube lessons stream from an embed; no local file to load.
+    if (lesson.kind === "youtube" || !handle) {
+      return () => { cancelled = true; };
+    }
     (async () => {
       try {
         const f = await fileFromRelPath(handle, lesson.relPath);
@@ -100,6 +104,15 @@ export function LessonView({
           <VideoPlayer
             src={videoUrl}
             tracks={tracks}
+            startAt={progress?.positionSeconds ?? 0}
+            onSaveProgress={(s) => { saveProgress(courseId, lesson.key, s); }}
+            onComplete={onVideoComplete}
+            onDuration={(s) => onDuration?.(lesson.key, s)}
+          />
+        )}
+        {lesson.kind === "youtube" && lesson.videoId && (
+          <VideoPlayer
+            youtubeId={lesson.videoId}
             startAt={progress?.positionSeconds ?? 0}
             onSaveProgress={(s) => { saveProgress(courseId, lesson.key, s); }}
             onComplete={onVideoComplete}

@@ -13,6 +13,7 @@ import { LocalModeBadge } from "@/components/LocalModeBadge";
 import { BrandMark } from "@/components/BrandMark";
 import { UserMenu } from "@/components/UserMenu";
 import { InstallButton } from "@/components/InstallButton";
+import { YouTubeImportButton } from "@/components/YouTubeImportButton";
 import { Button } from "@/components/ui/button";
 
 type SessionUser = { name: string | null; email: string | null; image: string | null };
@@ -44,6 +45,7 @@ export function LibraryView({ isLocal, owner, user }: { isLocal: boolean; owner:
               <Link href="/stats"><TrendingUp className="size-4" /> Progress</Link>
             </Button>
           )}
+          {!isLocal && <YouTubeImportButton />}
           <AddCourseButton />
           {user && <UserMenu name={user.name} email={user.email} image={user.image} />}
         </div>

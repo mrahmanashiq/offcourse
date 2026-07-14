@@ -39,6 +39,7 @@ export async function listCourses(): Promise<CourseSummary[]> {
       id: c.id,
       title: c.title,
       thumbnail: c.thumbnail,
+      source: tree.source === "youtube" ? "youtube" : "local",
       tags: c.tags ?? [],
       pinned: c.pinned,
       archived: c.archived,

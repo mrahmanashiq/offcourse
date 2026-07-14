@@ -28,8 +28,8 @@ function getSavedVolume(): { volume: number; muted: boolean } {
 
 const ctlBtn = "inline-flex items-center gap-1 rounded-md border border-border bg-muted px-2.5 py-1 text-foreground/80 transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-muted";
 
-export function VideoPlayer({ src, tracks = [], startAt, onSaveProgress, onComplete, onDuration }: {
-  src: string; startAt: number;
+export function VideoPlayer({ src, youtubeId, tracks = [], startAt, onSaveProgress, onComplete, onDuration }: {
+  src?: string; youtubeId?: string; startAt: number;
   tracks?: { src: string; label: string; lang: string }[];
   onSaveProgress: (seconds: number) => void; onComplete: () => void;
   onDuration?: (seconds: number) => void;
@@ -133,7 +133,7 @@ export function VideoPlayer({ src, tracks = [], startAt, onSaveProgress, onCompl
         <MediaPlayer
           ref={player}
           className="block w-full"
-          src={{ src, type: "video/mp4" }}
+          src={youtubeId ? `youtube/${youtubeId}` : { src: src ?? "", type: "video/mp4" }}
           aspectRatio="16/9"
           crossOrigin=""
           playsInline
@@ -191,9 +191,13 @@ export function VideoPlayer({ src, tracks = [], startAt, onSaveProgress, onCompl
         <button onClick={() => setPoint("b")} disabled={loop.a === null} className={ctlBtn}>{loop.b === null ? "Set B" : `B ${formatTimestamp(loop.b)}`}</button>
         {(loop.a !== null || loop.b !== null) && <button onClick={clearLoop} className={ctlBtn}>Clear</button>}
         {looping && <span className="font-medium text-primary">● looping</span>}
-        <span className="mx-1 h-4 w-px bg-border" />
-        <button onClick={screenshot} className={ctlBtn}><Camera className="size-3.5" /> Screenshot → note</button>
-        <button onClick={() => setAudioOnly((v) => !v)} className={cn(ctlBtn, audioOnly && "border-primary/40 bg-primary/15 text-primary hover:bg-primary/25")}><Headphones className="size-3.5" /> Audio only</button>
+        {!youtubeId && (
+          <>
+            <span className="mx-1 h-4 w-px bg-border" />
+            <button onClick={screenshot} className={ctlBtn}><Camera className="size-3.5" /> Screenshot → note</button>
+            <button onClick={() => setAudioOnly((v) => !v)} className={cn(ctlBtn, audioOnly && "border-primary/40 bg-primary/15 text-primary hover:bg-primary/25")}><Headphones className="size-3.5" /> Audio only</button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -67,6 +67,7 @@ export const localSource: DataSource = {
         id: c.id,
         title: c.title,
         thumbnail: c.thumbnail,
+        source: c.structureJson.source === "youtube" ? "youtube" : "local",
         tags: c.tags ?? [],
         pinned: c.pinned,
         archived: c.archived,

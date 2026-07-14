@@ -46,6 +46,7 @@ export function CoursePlayer({ courseId, tree, initialProgress, initialDurations
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const isRemote = tree.source === "youtube";
   const flat = useMemo(() => tree.modules.flatMap((m) => m.lessons), [tree]);
   const requestedKey = useSearchParams().get("lesson");
   // Open the requested lesson (e.g. from search), else "continue learning" -
@@ -63,12 +64,13 @@ export function CoursePlayer({ courseId, tree, initialProgress, initialDurations
   }, [requestedKey, flat]);
 
   useEffect(() => {
+    if (isRemote) return; // YouTube courses have no local folder
     (async () => {
       const h = await loadHandle(courseId);
       if (h && (await ensureReadPermission(h))) setHandle(h);
       else setNeedsReopen(true);
     })();
-  }, [courseId]);
+  }, [courseId, isRemote]);
 
   const reopen = useCallback(async () => {
     try {
@@ -197,7 +199,7 @@ export function CoursePlayer({ courseId, tree, initialProgress, initialDurations
 
         <main id="main" className="flex-1 overflow-y-auto p-6">
           {needsReopen && <ReopenPrompt onReopen={reopen} courseName={tree.title} />}
-          {handle && active && (
+          {active && (isRemote || handle) && (
             <LessonView
               courseId={courseId}
               handle={handle}

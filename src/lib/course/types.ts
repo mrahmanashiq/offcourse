@@ -1,4 +1,4 @@
-export type LessonKind = "video" | "pdf" | "doc" | "subtitle";
+export type LessonKind = "video" | "pdf" | "doc" | "subtitle" | "youtube";
 
 export interface RawEntry {
   name: string;
@@ -7,6 +7,6 @@ export interface RawEntry {
   children?: RawEntry[];
 }
 export interface Subtitle { label: string; lang: string; relPath: string }
-export interface Lesson { key: string; title: string; relPath: string; kind: LessonKind; subtitles?: Subtitle[] }
+export interface Lesson { key: string; title: string; relPath: string; kind: LessonKind; subtitles?: Subtitle[]; videoId?: string }
 export interface Module { title: string; lessons: Lesson[] }
-export interface CourseTree { title: string; modules: Module[] }
+export interface CourseTree { title: string; modules: Module[]; source?: "local" | "youtube" }

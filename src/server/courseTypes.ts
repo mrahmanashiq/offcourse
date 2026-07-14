@@ -2,6 +2,7 @@ export type CourseSummary = {
   id: string;
   title: string;
   thumbnail: string | null;
+  source: "local" | "youtube";
   tags: string[];
   pinned: boolean;
   archived: boolean;

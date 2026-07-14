@@ -244,8 +244,9 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
                       </div>
                     </div>
 
-                    {(c.tags.length > 0 || c.archived) && (
+                    {(c.tags.length > 0 || c.archived || c.source === "youtube") && (
                       <div className="flex flex-wrap gap-1">
+                        {c.source === "youtube" && <Badge variant="secondary" className="text-[10px]">YouTube</Badge>}
                         {c.archived && <Badge variant="outline" className="text-[10px]">Archived</Badge>}
                         {c.tags.slice(0, 3).map((t) => (
                           <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>

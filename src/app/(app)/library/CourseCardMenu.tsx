@@ -83,9 +83,11 @@ export function CourseCardMenu({ course }: { course: CourseSummary }) {
           <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setDialog("cover"); }}>
             <ImageIcon className="size-4" /> Change cover…
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onRelink(); }}>
-            <FolderSync className="size-4" /> Re-link folder…
-          </DropdownMenuItem>
+          {course.source !== "youtube" && (
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onRelink(); }}>
+              <FolderSync className="size-4" /> Re-link folder…
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => run(() => setCourseArchived(course.id, !course.archived))}>
             {course.archived ? <ArchiveRestore className="size-4" /> : <Archive className="size-4" />}
