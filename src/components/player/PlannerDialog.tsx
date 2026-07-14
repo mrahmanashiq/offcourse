@@ -6,7 +6,7 @@ import { fileFromRelPath } from "@/lib/fs/readDir";
 import { measureDuration } from "@/lib/player/measureDuration";
 import { formatDuration } from "@/lib/formatDuration";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -117,7 +117,7 @@ export function PlannerDialog({ courseId, lessons, progress, durations, handle, 
 
         <div className="mt-1">
           <label className="mb-1.5 block text-sm font-medium">Finish by</label>
-          <Input type="date" value={date} onChange={(e) => onDate(e.target.value)} className="w-full" />
+          <DatePicker value={date} onChange={onDate} placeholder="Pick a date" />
           {remainingLessons === 0 ? (
             <p className="mt-2 text-sm font-medium text-success">Course complete 🎉</p>
           ) : plan ? (
