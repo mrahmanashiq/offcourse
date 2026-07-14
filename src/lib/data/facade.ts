@@ -39,6 +39,8 @@ export const deleteBookmark: DataSource["deleteBookmark"] = (id) => src().delete
 
 export const putNoteImage: DataSource["putNoteImage"] = (dataUrl) => src().putNoteImage(dataUrl);
 export const getNoteImage: DataSource["getNoteImage"] = (id) => src().getNoteImage(id);
+export const getTranscript: DataSource["getTranscript"] = (c, l) => src().getTranscript(c, l);
+export const saveTranscript: DataSource["saveTranscript"] = (c, l, vtt) => src().saveTranscript(c, l, vtt);
 
 export const getSearchIndex: DataSource["getSearchIndex"] = () => src().getSearchIndex();
 

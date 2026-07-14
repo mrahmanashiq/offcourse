@@ -7,6 +7,7 @@ import { VideoPlayer } from "./VideoPlayer";
 import { PdfView } from "./PdfView";
 import { NotesPanel } from "./NotesPanel";
 import { BookmarksPanel } from "./BookmarksPanel";
+import { TranscriptPanel } from "./TranscriptPanel";
 import { Button } from "@/components/ui/button";
 import { srtToVtt } from "@/lib/player/vtt";
 import { cn } from "@/lib/utils";
@@ -129,6 +130,7 @@ export function LessonView({
         <div className="mt-6 flex flex-col gap-4">
           <NotesPanel key={`notes-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} lessonTitle={lesson.title} />
           {lesson.kind === "video" && <BookmarksPanel key={`bm-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} />}
+          {lesson.kind === "video" && <TranscriptPanel key={`tr-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} file={file} />}
         </div>
       )}
     </div>

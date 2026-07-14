@@ -14,22 +14,30 @@ type ProgRec = { key: string; courseId: string; lessonKey: string; positionSecon
 type NoteRec = { key: string; courseId: string; lessonKey: string; content: string; tags: string[] };
 type BmRec = { id: string; courseId: string; lessonKey: string; label: string; timestampSeconds: number; createdAt: number };
 
+type TranscriptRec = { key: string; courseId: string; lessonKey: string; vtt: string };
+
 interface LocalDB extends DBSchema {
   courses: { key: string; value: CourseRec };
   progress: { key: string; value: ProgRec };
   notes: { key: string; value: NoteRec };
   bookmarks: { key: string; value: BmRec };
+  transcripts: { key: string; value: TranscriptRec };
 }
 
 let dbp: Promise<IDBPDatabase<LocalDB>> | null = null;
 function getDB() {
   if (!dbp) {
-    dbp = openDB<LocalDB>("offcourse-local", 1, {
-      upgrade(db) {
-        db.createObjectStore("courses", { keyPath: "id" });
-        db.createObjectStore("progress", { keyPath: "key" });
-        db.createObjectStore("notes", { keyPath: "key" });
-        db.createObjectStore("bookmarks", { keyPath: "id" });
+    dbp = openDB<LocalDB>("offcourse-local", 2, {
+      upgrade(db, oldVersion) {
+        if (oldVersion < 1) {
+          db.createObjectStore("courses", { keyPath: "id" });
+          db.createObjectStore("progress", { keyPath: "key" });
+          db.createObjectStore("notes", { keyPath: "key" });
+          db.createObjectStore("bookmarks", { keyPath: "id" });
+        }
+        if (oldVersion < 2) {
+          db.createObjectStore("transcripts", { keyPath: "key" });
+        }
       },
     });
   }
@@ -102,12 +110,13 @@ export const localSource: DataSource = {
   async deleteCourse(id: string): Promise<void> {
     const db = await getDB();
     await db.delete("courses", id);
-    const [ps, ns, bs] = await Promise.all([db.getAll("progress"), db.getAll("notes"), db.getAll("bookmarks")]);
-    const tx = db.transaction(["progress", "notes", "bookmarks"], "readwrite");
+    const [ps, ns, bs, ts] = await Promise.all([db.getAll("progress"), db.getAll("notes"), db.getAll("bookmarks"), db.getAll("transcripts")]);
+    const tx = db.transaction(["progress", "notes", "bookmarks", "transcripts"], "readwrite");
     await Promise.all([
       ...ps.filter((p) => p.courseId === id).map((p) => tx.objectStore("progress").delete(p.key)),
       ...ns.filter((n) => n.courseId === id).map((n) => tx.objectStore("notes").delete(n.key)),
       ...bs.filter((b) => b.courseId === id).map((b) => tx.objectStore("bookmarks").delete(b.id)),
+      ...ts.filter((t) => t.courseId === id).map((t) => tx.objectStore("transcripts").delete(t.key)),
       tx.done,
     ]);
   },
@@ -226,6 +235,15 @@ export const localSource: DataSource = {
 
   putNoteImage: putLocalNoteImage,
   getNoteImage: getLocalNoteImage,
+
+  async getTranscript(courseId: string, lessonKey: string): Promise<string | null> {
+    const db = await getDB();
+    return (await db.get("transcripts", pk(courseId, lessonKey)))?.vtt ?? null;
+  },
+  async saveTranscript(courseId: string, lessonKey: string, vtt: string): Promise<void> {
+    const db = await getDB();
+    await db.put("transcripts", { key: pk(courseId, lessonKey), courseId, lessonKey, vtt });
+  },
 
   async getSearchIndex(): Promise<SearchIndex> {
     const db = await getDB();

@@ -79,6 +79,18 @@ export const noteImages = pgTable("note_images", {
   dataUrl: text("dataUrl").notNull(),
   createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
 });
+// Auto-generated (Whisper) transcript per lesson, stored as WebVTT. Synced in
+// account mode; IndexedDB in local-only mode (via the DataSource seam).
+export const transcripts = pgTable("transcripts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  courseId: uuid("courseId").notNull().references(() => courses.id, { onDelete: "cascade" }),
+  lessonKey: text("lessonKey").notNull(),
+  vtt: text("vtt").notNull(),
+  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+}, (t) => ({
+  uniqueTranscript: unique().on(t.userId, t.courseId, t.lessonKey),
+}));
 export const bookmarks = pgTable("bookmarks", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: text("userId").notNull().references(() => users.id, { onDelete: "cascade" }),

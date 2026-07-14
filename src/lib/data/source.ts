@@ -58,6 +58,10 @@ export interface DataSource {
   putNoteImage(dataUrl: string): Promise<string>;
   getNoteImage(id: string): Promise<string | null>;
 
+  // Auto-generated transcript (WebVTT) per lesson
+  getTranscript(courseId: string, lessonKey: string): Promise<string | null>;
+  saveTranscript(courseId: string, lessonKey: string, vtt: string): Promise<void>;
+
   // Search
   getSearchIndex(): Promise<SearchIndex>;
 }

@@ -36,6 +36,13 @@
       "when": 1784032597375,
       "tag": "0004_amused_the_renegades",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784041297801,
+      "tag": "0005_brainy_karnak",
+      "breakpoints": true
     }
   ]
 }
