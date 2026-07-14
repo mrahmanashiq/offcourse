@@ -2,13 +2,29 @@ import type { Metadata, Viewport } from "next";
 import "@/styles/globals.css";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mra-offcourse.vercel.app";
+const DESCRIPTION = "A private home for the courses you already downloaded. Local-first, offline, open source.";
+
 export const metadata: Metadata = {
-  title: "Offcourse",
-  description: "Offline course player",
+  metadataBase: new URL(SITE_URL),
+  title: { default: "Offcourse", template: "%s · Offcourse" },
+  description: DESCRIPTION,
   applicationName: "Offcourse",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Offcourse" },
   icons: { icon: "/icons/32", apple: "/icons/180" },
+  openGraph: {
+    title: "Offcourse",
+    description: DESCRIPTION,
+    url: "/",
+    siteName: "Offcourse",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Offcourse",
+    description: DESCRIPTION,
+  },
 };
 
 export const viewport: Viewport = {
