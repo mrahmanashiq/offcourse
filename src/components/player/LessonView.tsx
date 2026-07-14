@@ -9,12 +9,13 @@ import { NotesPanel } from "./NotesPanel";
 import { BookmarksPanel } from "./BookmarksPanel";
 import { Button } from "@/components/ui/button";
 import { srtToVtt } from "@/lib/player/vtt";
+import { cn } from "@/lib/utils";
 
 type Prog = { positionSeconds: number; completed: boolean } | undefined;
 
 export function LessonView({
   courseId, handle, lesson, moduleName, progress, onProgressChange,
-  index, total, hasPrev, hasNext, onPrev, onNext, autoplay, onDuration,
+  index, total, hasPrev, hasNext, onPrev, onNext, autoplay, onDuration, focus,
 }: {
   courseId: string; handle: FileSystemDirectoryHandle; lesson: Lesson;
   moduleName: string | null;
@@ -22,6 +23,7 @@ export function LessonView({
   index: number; total: number; hasPrev: boolean; hasNext: boolean;
   onPrev: () => void; onNext: () => void; autoplay: boolean;
   onDuration?: (lessonKey: string, seconds: number) => void;
+  focus?: boolean;
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -78,7 +80,7 @@ export function LessonView({
   }
 
   return (
-    <div className="mx-auto max-w-[960px]">
+    <div className={cn("mx-auto transition-[max-width]", focus ? "max-w-[1200px]" : "max-w-[960px]")}>
       {moduleName && <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">{moduleName}</p>}
       <h1 className="mb-4 text-[22px] font-bold leading-tight tracking-tight">{lesson.title}</h1>
 
@@ -123,10 +125,12 @@ export function LessonView({
         </Button>
       </div>
 
-      <div className="mt-6 flex flex-col gap-4">
-        <NotesPanel key={`notes-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} lessonTitle={lesson.title} />
-        {lesson.kind === "video" && <BookmarksPanel key={`bm-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} />}
-      </div>
+      {!focus && (
+        <div className="mt-6 flex flex-col gap-4">
+          <NotesPanel key={`notes-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} lessonTitle={lesson.title} />
+          {lesson.kind === "video" && <BookmarksPanel key={`bm-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} />}
+        </div>
+      )}
     </div>
   );
 }

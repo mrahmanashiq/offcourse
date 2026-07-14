@@ -11,10 +11,11 @@ import { ReopenPrompt } from "@/components/player/ReopenPrompt";
 import { LessonView } from "@/components/player/LessonView";
 import { EditStructureButton } from "@/components/player/EditStructureButton";
 import { PlannerDialog } from "@/components/player/PlannerDialog";
+import { Pomodoro } from "@/components/player/Pomodoro";
 import { KeyboardHelp } from "@/components/player/KeyboardHelp";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Focus, Minimize2 } from "lucide-react";
 import { formatDuration } from "@/lib/formatDuration";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,20 @@ export function CoursePlayer({ courseId, tree, initialProgress, initialDurations
   const [durations, setDurations] = useState<Record<string, number>>(initialDurations);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [autoplay, setAutoplay] = useState(false);
+  const [focus, setFocus] = useState(false);
+  const showSidebar = sidebarOpen && !focus;
+
+  // Focus mode: `z` toggles distraction-free view, Esc exits.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+      if (e.key === "z" || e.key === "Z") { e.preventDefault(); setFocus((v) => !v); }
+      else if (e.key === "Escape") setFocus(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const flat = useMemo(() => tree.modules.flatMap((m) => m.lessons), [tree]);
   const requestedKey = useSearchParams().get("lesson");
@@ -106,14 +121,14 @@ export function CoursePlayer({ courseId, tree, initialProgress, initialDurations
   const activeModule = active ? tree.modules.find((m) => m.lessons.some((l) => l.key === active.key))?.title ?? null : null;
 
   return (
-    <div className={cn("grid h-dvh overflow-hidden", sidebarOpen ? "grid-cols-[340px_1fr] max-[720px]:grid-cols-[1fr]" : "grid-cols-[1fr]")}>
+    <div className={cn("grid h-dvh overflow-hidden", showSidebar ? "grid-cols-[340px_1fr] max-[720px]:grid-cols-[1fr]" : "grid-cols-[1fr]")}>
       <Sidebar
         tree={tree}
         progress={progress}
         activeKey={active?.key ?? null}
         onSelect={setActive}
         onToggleComplete={toggleComplete}
-        open={sidebarOpen}
+        open={showSidebar}
         onToggle={() => setSidebarOpen((v) => !v)}
         completed={done}
         total={total}
@@ -122,8 +137,8 @@ export function CoursePlayer({ courseId, tree, initialProgress, initialDurations
       <div className="flex h-dvh flex-col overflow-hidden">
         <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-card px-6">
           <div className="flex items-center gap-2">
-            {!sidebarOpen && (
-              <button className="grid size-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={() => setSidebarOpen(true)} aria-label="Show sidebar" title="Show course contents" suppressHydrationWarning>
+            {!showSidebar && (
+              <button className="grid size-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={() => { setSidebarOpen(true); setFocus(false); }} aria-label="Show sidebar" title="Show course contents" suppressHydrationWarning>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v18" /></svg>
               </button>
             )}
@@ -152,6 +167,16 @@ export function CoursePlayer({ courseId, tree, initialProgress, initialDurations
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" /></svg>
               Autoplay
+            </button>
+            <Pomodoro />
+            <button
+              className={cn("grid size-8 place-items-center rounded-md transition-colors", focus ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
+              onClick={() => setFocus((v) => !v)}
+              aria-pressed={focus}
+              title={focus ? "Exit focus mode (Esc)" : "Focus mode (z)"}
+              suppressHydrationWarning
+            >
+              {focus ? <Minimize2 className="size-4" /> : <Focus className="size-4" />}
             </button>
             <button
               className="grid size-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -187,6 +212,7 @@ export function CoursePlayer({ courseId, tree, initialProgress, initialDurations
               onNext={goNext}
               autoplay={autoplay}
               onDuration={recordDuration}
+              focus={focus}
             />
           )}
         </main>
