@@ -9,6 +9,7 @@ import { UnsupportedBrowser } from "@/components/UnsupportedBrowser";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { InstallButton } from "@/components/InstallButton";
 import { Reveal } from "./Reveal";
 import { HeroShowcase } from "./HeroShowcase";
 
@@ -55,6 +56,7 @@ export default async function Landing() {
             <Button asChild variant="ghost" size="sm">
               <a href={REPO} target="_blank" rel="noreferrer"><GithubMark className="size-4" /> GitHub</a>
             </Button>
+            <InstallButton />
             <ThemeToggle />
             <Button asChild size="sm">
               <Link href={session ? "/library" : "/login"}>{session ? "Library" : "Sign in"}</Link>

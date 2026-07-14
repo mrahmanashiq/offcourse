@@ -12,6 +12,7 @@ import { CommandSearchButton } from "@/components/CommandSearchButton";
 import { LocalModeBadge } from "@/components/LocalModeBadge";
 import { BrandMark } from "@/components/BrandMark";
 import { UserMenu } from "@/components/UserMenu";
+import { InstallButton } from "@/components/InstallButton";
 import { Button } from "@/components/ui/button";
 
 type SessionUser = { name: string | null; email: string | null; image: string | null };
@@ -36,6 +37,7 @@ export function LibraryView({ isLocal, owner, user }: { isLocal: boolean; owner:
           {isLocal && <LocalModeBadge />}
         </div>
         <div className="flex items-center gap-2">
+          <InstallButton />
           <CommandSearchButton />
           {!isLocal && (
             <Button asChild variant="outline">
