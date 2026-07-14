@@ -10,7 +10,7 @@ type CourseRec = {
   structureJson: CourseTree; tags: string[]; pinned: boolean; archived: boolean;
   lastOpenedAt: number | null; createdAt: number;
 };
-type ProgRec = { key: string; courseId: string; lessonKey: string; positionSeconds: number; completed: boolean; completedAt: number | null };
+type ProgRec = { key: string; courseId: string; lessonKey: string; positionSeconds: number; completed: boolean; completedAt: number | null; durationSeconds?: number };
 type NoteRec = { key: string; courseId: string; lessonKey: string; content: string; tags: string[] };
 type BmRec = { id: string; courseId: string; lessonKey: string; label: string; timestampSeconds: number; createdAt: number };
 
@@ -145,6 +145,7 @@ export const localSource: DataSource = {
     await db.put("progress", {
       key, courseId, lessonKey, positionSeconds,
       completed: existing?.completed ?? false, completedAt: existing?.completedAt ?? null,
+      durationSeconds: existing?.durationSeconds,
     });
   },
   async setCompleted(courseId: string, lessonKey: string, completed: boolean): Promise<void> {
@@ -154,7 +155,27 @@ export const localSource: DataSource = {
     await db.put("progress", {
       key, courseId, lessonKey, positionSeconds: existing?.positionSeconds ?? 0,
       completed, completedAt: completed ? Date.now() : null,
+      durationSeconds: existing?.durationSeconds,
     });
+  },
+  async saveDuration(courseId: string, lessonKey: string, durationSeconds: number): Promise<void> {
+    const db = await getDB();
+    const key = pk(courseId, lessonKey);
+    const existing = await db.get("progress", key);
+    if (existing?.durationSeconds === durationSeconds) return;
+    await db.put("progress", {
+      key, courseId, lessonKey,
+      positionSeconds: existing?.positionSeconds ?? 0,
+      completed: existing?.completed ?? false, completedAt: existing?.completedAt ?? null,
+      durationSeconds,
+    });
+  },
+  async getCourseDurations(courseId: string): Promise<Record<string, number>> {
+    const db = await getDB();
+    const ps = (await db.getAll("progress")).filter((p) => p.courseId === courseId);
+    const out: Record<string, number> = {};
+    for (const p of ps) if (p.durationSeconds != null) out[p.lessonKey] = p.durationSeconds;
+    return out;
   },
 
   async getNote(courseId: string, lessonKey: string): Promise<string> {

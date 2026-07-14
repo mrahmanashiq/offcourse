@@ -14,13 +14,14 @@ type Prog = { positionSeconds: number; completed: boolean } | undefined;
 
 export function LessonView({
   courseId, handle, lesson, moduleName, progress, onProgressChange,
-  index, total, hasPrev, hasNext, onPrev, onNext, autoplay,
+  index, total, hasPrev, hasNext, onPrev, onNext, autoplay, onDuration,
 }: {
   courseId: string; handle: FileSystemDirectoryHandle; lesson: Lesson;
   moduleName: string | null;
   progress: Prog; onProgressChange: (p: { positionSeconds: number; completed: boolean }) => void;
   index: number; total: number; hasPrev: boolean; hasNext: boolean;
   onPrev: () => void; onNext: () => void; autoplay: boolean;
+  onDuration?: (lessonKey: string, seconds: number) => void;
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -99,6 +100,7 @@ export function LessonView({
             startAt={progress?.positionSeconds ?? 0}
             onSaveProgress={(s) => { saveProgress(courseId, lesson.key, s); }}
             onComplete={onVideoComplete}
+            onDuration={(s) => onDuration?.(lesson.key, s)}
           />
         )}
         {lesson.kind === "pdf" && file && <PdfView file={file} />}

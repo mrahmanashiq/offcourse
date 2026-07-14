@@ -2,7 +2,7 @@ import {
   listCourses, upsertCourse, getCourse, deleteCourse, touchCourse,
   setCoursePinned, setCourseArchived, setCourseTags, setCourseThumbnail, saveCourseStructure,
 } from "@/server/courses";
-import { getCourseProgress, saveProgress, setCompleted } from "@/server/progress";
+import { getCourseProgress, saveProgress, setCompleted, saveDuration, getCourseDurations } from "@/server/progress";
 import { getNote, getNoteTags, setNoteTags, getCourseNotes, saveNote } from "@/server/notes";
 import { addBookmark, listBookmarks, deleteBookmark } from "@/server/bookmarks";
 import { getSearchIndex } from "@/server/searchIndex";
@@ -24,6 +24,8 @@ export const serverSource: DataSource = {
   getCourseProgress,
   saveProgress,
   setCompleted,
+  saveDuration,
+  getCourseDurations,
   getNote,
   getNoteTags,
   setNoteTags,

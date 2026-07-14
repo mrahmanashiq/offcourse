@@ -35,6 +35,27 @@ export async function setCompleted(courseId: string, lessonKey: string, complete
   }
 }
 
+export async function saveDuration(courseId: string, lessonKey: string, durationSeconds: number) {
+  const userId = await requireUserId();
+  const existing = await row(userId, courseId, lessonKey);
+  if (existing) {
+    if (existing.durationSeconds === durationSeconds) return; // already known
+    await db.update(lessonProgress).set({ durationSeconds })
+      .where(and(eq(lessonProgress.id, existing.id), eq(lessonProgress.userId, userId)));
+  } else {
+    await db.insert(lessonProgress).values({ userId, courseId, lessonKey, durationSeconds });
+  }
+}
+
+export async function getCourseDurations(courseId: string): Promise<Record<string, number>> {
+  const userId = await requireUserId();
+  const rows = await db.select().from(lessonProgress)
+    .where(and(eq(lessonProgress.userId, userId), eq(lessonProgress.courseId, courseId)));
+  const out: Record<string, number> = {};
+  for (const r of rows) if (r.durationSeconds != null) out[r.lessonKey] = r.durationSeconds;
+  return out;
+}
+
 export async function getCourseProgress(courseId: string) {
   const userId = await requireUserId();
   const rows = await db.select().from(lessonProgress)

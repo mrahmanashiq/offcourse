@@ -5,25 +5,28 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CourseTree, Lesson } from "@/lib/course/types";
 import { loadHandle, ensureReadPermission, saveHandle } from "@/lib/fs/handleStore";
 import { pickCourseFolder } from "@/lib/fs/readDir";
-import { setCompleted, getCourseNotes, resolveNoteImages } from "@/lib/data/facade";
+import { setCompleted, getCourseNotes, resolveNoteImages, saveDuration } from "@/lib/data/facade";
 import { Sidebar } from "@/components/player/Sidebar";
 import { ReopenPrompt } from "@/components/player/ReopenPrompt";
 import { LessonView } from "@/components/player/LessonView";
 import { EditStructureButton } from "@/components/player/EditStructureButton";
+import { PlannerDialog } from "@/components/player/PlannerDialog";
 import { KeyboardHelp } from "@/components/player/KeyboardHelp";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { formatDuration } from "@/lib/formatDuration";
 import { cn } from "@/lib/utils";
 
 type Progress = Record<string, { positionSeconds: number; completed: boolean }>;
 
-export function CoursePlayer({ courseId, tree, initialProgress }: {
-  courseId: string; tree: CourseTree; initialProgress: Progress;
+export function CoursePlayer({ courseId, tree, initialProgress, initialDurations }: {
+  courseId: string; tree: CourseTree; initialProgress: Progress; initialDurations: Record<string, number>;
 }) {
   const [handle, setHandle] = useState<FileSystemDirectoryHandle | null>(null);
   const [needsReopen, setNeedsReopen] = useState(false);
   const [progress, setProgress] = useState<Progress>(initialProgress);
+  const [durations, setDurations] = useState<Record<string, number>>(initialDurations);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [autoplay, setAutoplay] = useState(false);
 
@@ -67,6 +70,12 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
     await setCompleted(courseId, key, value);
   }, [courseId]);
 
+  // Record a lesson's measured duration (from playback or the planner's probe).
+  const recordDuration = useCallback((key: string, seconds: number) => {
+    setDurations((prev) => (prev[key] === seconds ? prev : { ...prev, [key]: seconds }));
+    saveDuration(courseId, key, seconds).catch(() => { /* best-effort */ });
+  }, [courseId]);
+
   const exportAllNotes = useCallback(async () => {
     const all = await getCourseNotes(courseId);
     if (Object.keys(all).length === 0) { alert("No notes to export yet."); return; }
@@ -93,6 +102,7 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
   const total = flat.length;
   const done = flat.filter((l) => progress[l.key]?.completed).length;
   const percent = total ? Math.round((done / total) * 100) : 0;
+  const totalSeconds = flat.reduce((n, l) => n + (l.kind === "video" ? durations[l.key] ?? 0 : 0), 0);
   const activeModule = active ? tree.modules.find((m) => m.lessons.some((l) => l.key === active.key))?.title ?? null : null;
 
   return (
@@ -128,7 +138,7 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
               <span className="h-1.5 w-[90px] overflow-hidden rounded-full bg-border">
                 <span className="block h-full rounded-full bg-gradient-to-r from-primary to-primary/80 transition-all" style={{ width: `${percent}%` }} />
               </span>
-              {done} / {total} lessons · {percent}%
+              {done} / {total} lessons · {percent}%{totalSeconds > 0 ? ` · ${formatDuration(totalSeconds)}` : ""}
             </div>
             <button
               className={cn(
@@ -152,6 +162,7 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
             </button>
+            <PlannerDialog courseId={courseId} lessons={flat} progress={progress} durations={durations} handle={handle} onMeasured={recordDuration} />
             <EditStructureButton courseId={courseId} tree={tree} />
             <KeyboardHelp />
             <ThemeToggle />
@@ -175,6 +186,7 @@ export function CoursePlayer({ courseId, tree, initialProgress }: {
               onPrev={goPrev}
               onNext={goNext}
               autoplay={autoplay}
+              onDuration={recordDuration}
             />
           )}
         </main>

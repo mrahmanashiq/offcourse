@@ -28,10 +28,11 @@ function getSavedVolume(): { volume: number; muted: boolean } {
 
 const ctlBtn = "inline-flex items-center gap-1 rounded-md border border-border bg-muted px-2.5 py-1 text-foreground/80 transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-muted";
 
-export function VideoPlayer({ src, tracks = [], startAt, onSaveProgress, onComplete }: {
+export function VideoPlayer({ src, tracks = [], startAt, onSaveProgress, onComplete, onDuration }: {
   src: string; startAt: number;
   tracks?: { src: string; label: string; lang: string }[];
   onSaveProgress: (seconds: number) => void; onComplete: () => void;
+  onDuration?: (seconds: number) => void;
 }) {
   const player = useRef<MediaPlayerInstance>(null);
   const lastSave = useRef(0);
@@ -65,6 +66,7 @@ export function VideoPlayer({ src, tracks = [], startAt, onSaveProgress, onCompl
     p.volume = vol.volume;
     p.muted = vol.muted;
     if (startAt > 0 && startAt < p.duration) p.currentTime = startAt;
+    if (p.duration && Number.isFinite(p.duration)) onDuration?.(p.duration);
   }
   function onRateChange() {
     const r = player.current?.playbackRate;

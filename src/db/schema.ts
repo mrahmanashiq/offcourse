@@ -52,6 +52,7 @@ export const lessonProgress = pgTable("lesson_progress", {
   courseId: uuid("courseId").notNull().references(() => courses.id, { onDelete: "cascade" }),
   lessonKey: text("lessonKey").notNull(),
   positionSeconds: numeric("positionSeconds", { mode: "number" }).default(0).notNull(),
+  durationSeconds: numeric("durationSeconds", { mode: "number" }),
   completed: boolean("completed").default(false).notNull(),
   completedAt: timestamp("completedAt", { mode: "date" }),
   updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),

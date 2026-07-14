@@ -38,6 +38,10 @@ export interface DataSource {
   saveProgress(courseId: string, lessonKey: string, positionSeconds: number): Promise<void>;
   setCompleted(courseId: string, lessonKey: string, completed: boolean): Promise<void>;
 
+  // Lesson durations (measured from video metadata)
+  saveDuration(courseId: string, lessonKey: string, durationSeconds: number): Promise<void>;
+  getCourseDurations(courseId: string): Promise<Record<string, number>>;
+
   // Notes
   getNote(courseId: string, lessonKey: string): Promise<string>;
   getNoteTags(courseId: string, lessonKey: string): Promise<string[]>;

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getCourse, touchCourse, getCourseProgress } from "@/lib/data/facade";
+import { getCourse, touchCourse, getCourseProgress, getCourseDurations } from "@/lib/data/facade";
 import { DATA_CHANGED_EVENT } from "@/lib/data/mode";
 import type { CourseTree } from "@/lib/course/types";
 import { CoursePlayer } from "./CoursePlayer";
@@ -12,7 +12,7 @@ type Progress = Record<string, { positionSeconds: number; completed: boolean }>;
 type State =
   | { status: "loading" }
   | { status: "notfound" }
-  | { status: "ready"; tree: CourseTree; progress: Progress };
+  | { status: "ready"; tree: CourseTree; progress: Progress; durations: Record<string, number> };
 
 // Loads course + progress on the client so the page works in both account mode
 // (server actions) and local mode (IndexedDB), keeping CoursePlayer prop-fed.
@@ -28,9 +28,9 @@ export function CourseLoader({ courseId }: { courseId: string }) {
       if (cancelled) return;
       if (!course) { setState({ status: "notfound" }); return; }
       if (initial) await touchCourse(courseId);
-      const progress = await getCourseProgress(courseId);
+      const [progress, durations] = await Promise.all([getCourseProgress(courseId), getCourseDurations(courseId)]);
       if (cancelled) return;
-      setState({ status: "ready", tree: course.structure, progress });
+      setState({ status: "ready", tree: course.structure, progress, durations });
     }
     load(true).catch(() => { if (!cancelled) setState({ status: "notfound" }); });
     const onChange = () => { load(false).catch(() => { /* keep current view */ }); };
@@ -49,5 +49,5 @@ export function CourseLoader({ courseId }: { courseId: string }) {
       </div>
     );
   }
-  return <CoursePlayer courseId={courseId} tree={state.tree} initialProgress={state.progress} />;
+  return <CoursePlayer courseId={courseId} tree={state.tree} initialProgress={state.progress} initialDurations={state.durations} />;
 }

@@ -24,6 +24,8 @@ export const saveCourseStructure: DataSource["saveCourseStructure"] = (id, s) =>
 export const getCourseProgress: DataSource["getCourseProgress"] = (id) => src().getCourseProgress(id);
 export const saveProgress: DataSource["saveProgress"] = (c, l, s) => src().saveProgress(c, l, s);
 export const setCompleted: DataSource["setCompleted"] = (c, l, v) => src().setCompleted(c, l, v);
+export const saveDuration: DataSource["saveDuration"] = (c, l, s) => src().saveDuration(c, l, s);
+export const getCourseDurations: DataSource["getCourseDurations"] = (id) => src().getCourseDurations(id);
 
 export const getNote: DataSource["getNote"] = (c, l) => src().getNote(c, l);
 export const getNoteTags: DataSource["getNoteTags"] = (c, l) => src().getNoteTags(c, l);
