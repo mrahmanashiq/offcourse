@@ -120,7 +120,7 @@ export function CoursePlayer({ courseId, tree, initialProgress, initialDurations
   const total = flat.length;
   const done = flat.filter((l) => progress[l.key]?.completed).length;
   const percent = total ? Math.round((done / total) * 100) : 0;
-  const totalSeconds = flat.reduce((n, l) => n + (l.kind === "video" ? durations[l.key] ?? 0 : 0), 0);
+  const totalSeconds = flat.reduce((n, l) => n + (l.kind === "video" || l.kind === "audio" ? durations[l.key] ?? 0 : 0), 0);
   const activeModule = active ? tree.modules.find((m) => m.lessons.some((l) => l.key === active.key))?.title ?? null : null;
 
   return (

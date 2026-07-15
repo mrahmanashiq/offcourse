@@ -14,6 +14,18 @@ import { cn } from "@/lib/utils";
 
 type Prog = { positionSeconds: number; completed: boolean } | undefined;
 
+// Map an audio file extension to a MIME type so Vidstack picks the audio provider.
+function audioMime(relPath: string): string {
+  const ext = relPath.split(".").pop()?.toLowerCase();
+  switch (ext) {
+    case "m4a": case "aac": return "audio/mp4";
+    case "ogg": case "oga": case "opus": return "audio/ogg";
+    case "wav": return "audio/wav";
+    case "flac": return "audio/flac";
+    default: return "audio/mpeg";
+  }
+}
+
 // Render a YouTube video description with clickable links and a show-more toggle.
 function LinkifiedText({ text }: { text: string }) {
   const parts = text.split(/(https?:\/\/[^\s]+)/g);
@@ -88,9 +100,9 @@ export function LessonView({
         const f = await fileFromRelPath(handle, lesson.relPath);
         if (cancelled) return; // lesson changed before the file resolved
         setFile(f);
-        if (lesson.kind === "video") {
+        if (lesson.kind === "video" || lesson.kind === "audio") {
           const u = URL.createObjectURL(f); urls.push(u); setVideoUrl(u);
-          if (lesson.subtitles?.length) {
+          if (lesson.kind === "video" && lesson.subtitles?.length) {
             const tr = await Promise.all(lesson.subtitles.map(async (s) => {
               const sf = await fileFromRelPath(handle, s.relPath);
               let text = await sf.text();
@@ -124,7 +136,7 @@ export function LessonView({
       {moduleName && <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.06em] text-muted-foreground">{moduleName}</p>}
       <h1 className="mb-4 text-[22px] font-bold leading-tight tracking-tight">{lesson.title}</h1>
 
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-black shadow-2xl">
+      <div className={cn("relative overflow-hidden rounded-2xl border border-border shadow-2xl", lesson.kind === "audio" ? "bg-card p-4" : "bg-black")}>
         {countdown !== null && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-black/75 text-white backdrop-blur-sm">
             <p className="text-xs uppercase tracking-widest text-white/60">Up next</p>
@@ -154,6 +166,17 @@ export function LessonView({
             onDuration={(s) => onDuration?.(lesson.key, s)}
           />
         )}
+        {lesson.kind === "audio" && videoUrl && (
+          <VideoPlayer
+            src={videoUrl}
+            audio
+            mimeType={audioMime(lesson.relPath)}
+            startAt={progress?.positionSeconds ?? 0}
+            onSaveProgress={(s) => { saveProgress(courseId, lesson.key, s); }}
+            onComplete={onVideoComplete}
+            onDuration={(s) => onDuration?.(lesson.key, s)}
+          />
+        )}
         {lesson.kind === "pdf" && file && <PdfView file={file} />}
         {lesson.kind === "doc" && docUrl && (
           <div className="grid place-items-center bg-card p-8">
@@ -161,6 +184,15 @@ export function LessonView({
           </div>
         )}
       </div>
+
+      {(lesson.kind === "pdf" || lesson.kind === "doc") && (
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
+          <span className="text-muted-foreground">Reading material - mark it read when you&rsquo;re done.</span>
+          <Button variant={progress?.completed ? "secondary" : "default"} size="sm" onClick={() => markComplete(!progress?.completed)}>
+            {progress?.completed ? "Read ✓" : "Mark as read"}
+          </Button>
+        </div>
+      )}
 
       <div className="my-4 flex items-center justify-between gap-4">
         <Button variant="outline" onClick={onPrev} disabled={!hasPrev} suppressHydrationWarning>
@@ -180,8 +212,8 @@ export function LessonView({
             <YouTubeDescription text={lesson.description} />
           )}
           <NotesPanel key={`notes-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} lessonTitle={lesson.title} />
-          {lesson.kind === "video" && <BookmarksPanel key={`bm-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} />}
-          {lesson.kind === "video" && <TranscriptPanel key={`tr-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} lessonTitle={lesson.title} file={file} />}
+          {(lesson.kind === "video" || lesson.kind === "audio") && <BookmarksPanel key={`bm-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} />}
+          {(lesson.kind === "video" || lesson.kind === "audio") && <TranscriptPanel key={`tr-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} lessonTitle={lesson.title} file={file} />}
         </div>
       )}
     </div>

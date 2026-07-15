@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { MediaPlayer, MediaProvider, Track, type MediaPlayerInstance } from "@vidstack/react";
-import { DefaultVideoLayout, defaultLayoutIcons } from "@vidstack/react/player/layouts/default";
+import { MediaPlayer, MediaProvider, Track, type MediaPlayerInstance, type AudioMimeType, type VideoMimeType } from "@vidstack/react";
+import { DefaultVideoLayout, DefaultAudioLayout, defaultLayoutIcons } from "@vidstack/react/player/layouts/default";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
+import "@vidstack/react/player/styles/default/layouts/audio.css";
 import { Repeat, Camera, Headphones, Play, Pause, ExternalLink } from "lucide-react";
 import { shouldAutoComplete } from "@/lib/player/completion";
 import { formatTimestamp } from "@/lib/formatTimestamp";
@@ -28,8 +29,8 @@ function getSavedVolume(): { volume: number; muted: boolean } {
 
 const ctlBtn = "inline-flex items-center gap-1 rounded-md border border-border bg-muted px-2.5 py-1 text-foreground/80 transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-muted";
 
-export function VideoPlayer({ src, youtubeId, tracks = [], startAt, onSaveProgress, onComplete, onDuration }: {
-  src?: string; youtubeId?: string; startAt: number;
+export function VideoPlayer({ src, youtubeId, audio, mimeType, tracks = [], startAt, onSaveProgress, onComplete, onDuration }: {
+  src?: string; youtubeId?: string; audio?: boolean; mimeType?: string; startAt: number;
   tracks?: { src: string; label: string; lang: string }[];
   onSaveProgress: (seconds: number) => void; onComplete: () => void;
   onDuration?: (seconds: number) => void;
@@ -133,8 +134,9 @@ export function VideoPlayer({ src, youtubeId, tracks = [], startAt, onSaveProgre
         <MediaPlayer
           ref={player}
           className="block w-full"
-          src={youtubeId ? `youtube/${youtubeId}` : { src: src ?? "", type: "video/mp4" }}
-          aspectRatio="16/9"
+          src={youtubeId ? `youtube/${youtubeId}` : { src: src ?? "", type: (mimeType ?? "video/mp4") as AudioMimeType | VideoMimeType }}
+          viewType={audio ? "audio" : "video"}
+          aspectRatio={audio ? undefined : "16/9"}
           crossOrigin=""
           playsInline
           keyShortcuts={{
@@ -163,7 +165,7 @@ export function VideoPlayer({ src, youtubeId, tracks = [], startAt, onSaveProgre
               <Track key={t.src} src={t.src} kind="subtitles" label={t.label} lang={t.lang} default={i === 0} />
             ))}
           </MediaProvider>
-          <DefaultVideoLayout icons={defaultLayoutIcons} />
+          {audio ? <DefaultAudioLayout icons={defaultLayoutIcons} /> : <DefaultVideoLayout icons={defaultLayoutIcons} />}
         </MediaPlayer>
 
         {audioOnly && (
@@ -191,7 +193,7 @@ export function VideoPlayer({ src, youtubeId, tracks = [], startAt, onSaveProgre
         <button onClick={() => setPoint("b")} disabled={loop.a === null} className={ctlBtn}>{loop.b === null ? "Set B" : `B ${formatTimestamp(loop.b)}`}</button>
         {(loop.a !== null || loop.b !== null) && <button onClick={clearLoop} className={ctlBtn}>Clear</button>}
         {looping && <span className="font-medium text-primary">● looping</span>}
-        {!youtubeId && (
+        {!youtubeId && !audio && (
           <>
             <span className="mx-1 h-4 w-px bg-border" />
             <button onClick={screenshot} className={ctlBtn}><Camera className="size-3.5" /> Screenshot → note</button>

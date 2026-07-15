@@ -3,11 +3,13 @@ import { lessonKey } from "./lessonKey";
 import type { CourseTree, LessonKind, Module, RawEntry } from "./types";
 
 const VIDEO = new Set(["mp4", "webm", "mov", "mkv"]);
+const AUDIO = new Set(["mp3", "m4a", "aac", "ogg", "oga", "opus", "wav", "flac"]);
 const SUB = new Set(["srt", "vtt"]);
 
 export function classifyFile(name: string): LessonKind | null {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   if (VIDEO.has(ext)) return "video";
+  if (AUDIO.has(ext)) return "audio";
   if (ext === "pdf") return "pdf";
   if (ext === "docx" || ext === "doc") return "doc";
   if (SUB.has(ext)) return "subtitle";

@@ -32,7 +32,8 @@ export function PlannerDialog({ courseId, lessons, progress, durations, handle, 
   const completed = lessons.filter((l) => progress[l.key]?.completed).length;
   const remainingLessons = Math.max(0, total - completed);
 
-  const videoLessons = lessons.filter((l) => l.kind === "video");
+  // Video and audio lessons have a measurable duration that feeds the plan.
+  const videoLessons = lessons.filter((l) => l.kind === "video" || l.kind === "audio");
   const measuredCount = videoLessons.filter((l) => durations[l.key] != null).length;
   const unmeasured = videoLessons.length - measuredCount;
   const totalSeconds = videoLessons.reduce((n, l) => n + (durations[l.key] ?? 0), 0);

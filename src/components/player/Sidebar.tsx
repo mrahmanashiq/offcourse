@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { PlayCircle, FileText, MonitorPlay } from "lucide-react";
+import { PlayCircle, FileText, MonitorPlay, Headphones } from "lucide-react";
 import type { CourseTree, Lesson } from "@/lib/course/types";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,7 @@ const eqStyle = (h: number, delay: number): React.CSSProperties => ({
 function KindIcon({ kind }: { kind: Lesson["kind"] }) {
   const base = "size-4 shrink-0";
   if (kind === "video") return <PlayCircle className={cn(base, "text-primary/80")} role="img" aria-label="Video" />;
+  if (kind === "audio") return <Headphones className={cn(base, "text-violet-500/85")} role="img" aria-label="Audio" />;
   if (kind === "youtube") return <MonitorPlay className={cn(base, "text-[#ff0000]/85")} role="img" aria-label="YouTube video" />;
   if (kind === "pdf") return <FileText className={cn(base, "text-[#e0625a]/90")} role="img" aria-label="PDF" />;
   if (kind === "doc") return <FileText className={cn(base, "text-amber-600/90")} role="img" aria-label="Document" />;
@@ -112,7 +113,7 @@ export function Sidebar({
                           </span>
                         </button>
                         <button className="flex min-w-0 flex-1 items-center gap-2 py-2 text-left" onClick={() => onSelect(l)} suppressHydrationWarning>
-                          {isActive && (l.kind === "video" || l.kind === "youtube") ? (
+                          {isActive && (l.kind === "video" || l.kind === "youtube" || l.kind === "audio") ? (
                             <span className="inline-flex h-4 w-4 shrink-0 items-end justify-center gap-[2px]" aria-label="Now playing" role="img">
                               <span data-eqbar className={EQ_BAR} style={eqStyle(7, 0)} />
                               <span data-eqbar className={EQ_BAR} style={eqStyle(13, 0.2)} />

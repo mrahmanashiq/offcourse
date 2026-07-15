@@ -1,4 +1,4 @@
-export type LessonKind = "video" | "pdf" | "doc" | "subtitle" | "youtube";
+export type LessonKind = "video" | "audio" | "pdf" | "doc" | "subtitle" | "youtube";
 
 export interface RawEntry {
   name: string;

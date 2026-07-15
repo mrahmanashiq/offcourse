@@ -19,6 +19,9 @@ describe("classifyFile", () => {
   it("routes by extension", () => {
     expect(classifyFile("a.mp4")).toBe("video");
     expect(classifyFile("a.MKV")).toBe("video");
+    expect(classifyFile("a.mp3")).toBe("audio");
+    expect(classifyFile("a.M4A")).toBe("audio");
+    expect(classifyFile("a.opus")).toBe("audio");
     expect(classifyFile("a.pdf")).toBe("pdf");
     expect(classifyFile("a.docx")).toBe("doc");
     expect(classifyFile("a.vtt")).toBe("subtitle");
