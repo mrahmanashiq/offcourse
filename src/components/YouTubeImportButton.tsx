@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ListVideo, Loader2 } from "lucide-react";
+import { ListVideo, Loader2, Info } from "lucide-react";
 import { youtubeConnected, listMyPlaylists, importPlaylist, type YtPlaylist } from "@/server/youtube";
 import { connectYouTube } from "@/server/authActions";
 import { toast } from "@/components/Toast";
@@ -11,7 +11,7 @@ import {
   Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 
-export function YouTubeImportButton() {
+export function YouTubeImportButton({ accountEmail }: { accountEmail?: string | null }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [connected, setConnected] = useState<boolean | null>(null);
@@ -57,6 +57,15 @@ export function YouTubeImportButton() {
           <DialogTitle>Import a YouTube playlist</DialogTitle>
           <DialogDescription>Streams from YouTube (online). Your progress, notes and bookmarks are tracked here.</DialogDescription>
         </DialogHeader>
+
+        <div className="flex gap-2 rounded-lg border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
+          <Info className="mt-0.5 size-4 shrink-0 text-primary" />
+          <p>
+            {accountEmail ? <>Connected as <span className="font-medium text-foreground">{accountEmail}</span>. </> : null}
+            Any <span className="font-medium">public or unlisted</span> playlist works by pasting its link (from any account).
+            {" "}<span className="font-medium">Private</span> playlists are only available from this signed-in account. To use another account&rsquo;s private playlists, sign out and sign in with that account.
+          </p>
+        </div>
 
         {connected === null && <p className="text-sm text-muted-foreground">Checking your YouTube connection…</p>}
 

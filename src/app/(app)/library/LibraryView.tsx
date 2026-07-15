@@ -45,7 +45,7 @@ export function LibraryView({ isLocal, owner, user }: { isLocal: boolean; owner:
               <Link href="/stats"><TrendingUp className="size-4" /> Progress</Link>
             </Button>
           )}
-          {!isLocal && <YouTubeImportButton />}
+          {!isLocal && <YouTubeImportButton accountEmail={user?.email ?? null} />}
           <AddCourseButton />
           {user && <UserMenu name={user.name} email={user.email} image={user.image} />}
         </div>
