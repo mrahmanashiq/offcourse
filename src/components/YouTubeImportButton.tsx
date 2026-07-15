@@ -79,8 +79,8 @@ export function YouTubeImportButton({ accountEmail }: { accountEmail?: string | 
         )}
 
         {connected && (
-          <div className="flex flex-col gap-4">
-            <div>
+          <div className="flex min-w-0 flex-col gap-4">
+            <div className="min-w-0">
               <p className="mb-1.5 text-sm font-medium">Paste a playlist link</p>
               <div className="flex gap-2">
                 <Input
@@ -94,9 +94,9 @@ export function YouTubeImportButton({ accountEmail }: { accountEmail?: string | 
             </div>
 
             {playlists.length > 0 && (
-              <div>
+              <div className="min-w-0">
                 <p className="mb-1.5 text-sm font-medium">Your playlists</p>
-                <ul className="max-h-64 overflow-y-auto rounded-lg border border-border">
+                <ul className="max-h-64 min-w-0 overflow-y-auto rounded-lg border border-border">
                   {playlists.map((p) => (
                     <li key={p.id}>
                       <button

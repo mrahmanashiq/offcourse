@@ -4,7 +4,7 @@ import { MediaPlayer, MediaProvider, Track, type MediaPlayerInstance } from "@vi
 import { DefaultVideoLayout, defaultLayoutIcons } from "@vidstack/react/player/layouts/default";
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
-import { Repeat, Camera, Headphones, Play, Pause } from "lucide-react";
+import { Repeat, Camera, Headphones, Play, Pause, ExternalLink } from "lucide-react";
 import { shouldAutoComplete } from "@/lib/player/completion";
 import { formatTimestamp } from "@/lib/formatTimestamp";
 import { cn } from "@/lib/utils";
@@ -196,6 +196,14 @@ export function VideoPlayer({ src, youtubeId, tracks = [], startAt, onSaveProgre
             <span className="mx-1 h-4 w-px bg-border" />
             <button onClick={screenshot} className={ctlBtn}><Camera className="size-3.5" /> Screenshot → note</button>
             <button onClick={() => setAudioOnly((v) => !v)} className={cn(ctlBtn, audioOnly && "border-primary/40 bg-primary/15 text-primary hover:bg-primary/25")}><Headphones className="size-3.5" /> Audio only</button>
+          </>
+        )}
+        {youtubeId && (
+          <>
+            <span className="mx-1 h-4 w-px bg-border" />
+            <a href={`https://www.youtube.com/watch?v=${youtubeId}`} target="_blank" rel="noopener noreferrer" className={ctlBtn} title="Private videos only play on YouTube, where you are signed in">
+              <ExternalLink className="size-3.5" /> Watch on YouTube
+            </a>
           </>
         )}
       </div>
