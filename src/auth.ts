@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users, accounts, sessions, verificationTokens } from "@/db/schema";
 import { authConfig } from "@/auth.config";
@@ -29,4 +30,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     verificationTokensTable: verificationTokens,
   }),
   session: { strategy: "jwt" },
+  events: {
+    // The adapter only persists OAuth tokens on the FIRST link, so a re-login to
+    // grant a new scope (YouTube) wouldn't update them. Refresh them each sign-in.
+    async signIn({ account }) {
+      if (account?.provider === "google" && account.access_token) {
+        try {
+          await db.update(accounts).set({
+            access_token: account.access_token,
+            ...(account.refresh_token ? { refresh_token: account.refresh_token } : {}),
+            expires_at: account.expires_at ?? null,
+            scope: account.scope ?? null,
+            token_type: account.token_type ?? null,
+            id_token: account.id_token ?? null,
+          }).where(and(eq(accounts.provider, "google"), eq(accounts.providerAccountId, account.providerAccountId)));
+        } catch { /* best-effort token refresh */ }
+      }
+    },
+  },
 });
