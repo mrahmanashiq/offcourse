@@ -5,6 +5,7 @@ import { courses } from "@/db/schema";
 import { requireUserId } from "@/lib/requireUserId";
 import { getGoogleAccessToken, hasYouTubeScope } from "./googleToken";
 import type { CourseTree, Lesson } from "@/lib/course/types";
+import { groupYouTubeLessons } from "@/lib/course/groupPlaylist";
 
 export type YtPlaylist = { id: string; title: string; count: number; thumbnail: string | null };
 
@@ -92,7 +93,10 @@ export async function importPlaylist(input: string): Promise<{ id: string }> {
   // first video's thumbnail so the library card still shows a cover.
   const cover: string | null = thumbnail ?? lessons.find((l) => l.thumbnail)?.thumbnail ?? null;
 
-  const structure: CourseTree = { title, source: "youtube", modules: [{ title, lessons }] };
+  // Split the flat playlist into sections where the title numbering restarts
+  // (YouTube has no folders); users can rename/reorder these afterwards.
+  const modules = groupYouTubeLessons(lessons, title);
+  const structure: CourseTree = { title, source: "youtube", modules };
   const [row] = await db.insert(courses).values({
     userId, title, folderName: title, thumbnail: cover, structureJson: structure,
   }).returning();
