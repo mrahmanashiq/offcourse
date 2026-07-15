@@ -1,7 +1,8 @@
 "use client";
 import { useState, useTransition } from "react";
-import { ChevronUp, ChevronDown, Pencil } from "lucide-react";
+import { ChevronUp, ChevronDown, Pencil, ListTree } from "lucide-react";
 import type { CourseTree } from "@/lib/course/types";
+import { groupYouTubeLessons } from "@/lib/course/groupPlaylist";
 import { saveCourseStructure } from "@/lib/data/facade";
 import { invalidateData } from "@/lib/data/mode";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,16 @@ export function EditStructureButton({ courseId, tree }: { courseId: string; tree
     });
   }
 
+  // Re-split a flat playlist into sections where the title numbering restarts.
+  // Operates on the draft (reviewable before saving); lesson keys are unchanged
+  // so progress, notes and bookmarks are kept.
+  function autoOrganize() {
+    setDraft((d) => {
+      const lessons = d.modules.flatMap((m) => m.lessons);
+      return { ...d, modules: groupYouTubeLessons(lessons, d.title || d.modules[0]?.title || "Course") };
+    });
+  }
+
   function onSave() {
     startTransition(async () => {
       await saveCourseStructure(courseId, draft);
@@ -74,6 +85,15 @@ export function EditStructureButton({ courseId, tree }: { courseId: string; tree
             Rename or reorder sections and lessons. Your progress, notes and bookmarks are kept.
           </DialogDescription>
         </DialogHeader>
+
+        {tree.source === "youtube" && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            <span>YouTube playlists are flat. Split into sections where the numbering restarts (01 &rarr; 07 &rarr; 01).</span>
+            <Button variant="outline" size="sm" className="shrink-0" onClick={autoOrganize}>
+              <ListTree className="size-4" /> Auto-organize
+            </Button>
+          </div>
+        )}
 
         <div className="-mx-2 max-h-[60vh] space-y-4 overflow-y-auto px-2">
           {draft.modules.map((m, mi) => (
