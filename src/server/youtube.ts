@@ -66,16 +66,27 @@ export async function importPlaylist(input: string): Promise<{ id: string }> {
       const vid: string | undefined = it.contentDetails?.videoId ?? it.snippet?.resourceId?.videoId;
       const t: string | undefined = it.snippet?.title;
       if (!vid || t === "Private video" || t === "Deleted video") continue;
-      lessons.push({ key: vid, title: t || vid, relPath: vid, kind: "youtube", videoId: vid });
+      const th = it.snippet?.thumbnails;
+      const thumb: string | undefined = th?.high?.url ?? th?.medium?.url ?? th?.default?.url;
+      const desc: string | undefined = it.snippet?.description;
+      lessons.push({
+        key: vid, title: t || vid, relPath: vid, kind: "youtube", videoId: vid,
+        ...(thumb ? { thumbnail: thumb } : {}),
+        ...(desc && desc.trim() ? { description: desc } : {}),
+      });
     }
     pageToken = page.nextPageToken ?? "";
   } while (pageToken);
 
   if (lessons.length === 0) throw new Error("No playable videos found in that playlist.");
 
+  // Private playlists often have no playlist-level thumbnail; fall back to the
+  // first video's thumbnail so the library card still shows a cover.
+  const cover: string | null = thumbnail ?? lessons.find((l) => l.thumbnail)?.thumbnail ?? null;
+
   const structure: CourseTree = { title, source: "youtube", modules: [{ title, lessons }] };
   const [row] = await db.insert(courses).values({
-    userId, title, folderName: title, thumbnail, structureJson: structure,
+    userId, title, folderName: title, thumbnail: cover, structureJson: structure,
   }).returning();
   return { id: row.id };
 }

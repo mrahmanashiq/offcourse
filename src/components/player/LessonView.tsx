@@ -14,6 +14,41 @@ import { cn } from "@/lib/utils";
 
 type Prog = { positionSeconds: number; completed: boolean } | undefined;
 
+// Render a YouTube video description with clickable links and a show-more toggle.
+function LinkifiedText({ text }: { text: string }) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g);
+  return (
+    <>
+      {parts.map((p, i) =>
+        /^https?:\/\//.test(p) ? (
+          <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline underline-offset-2 hover:text-primary/80">{p}</a>
+        ) : (
+          p
+        ),
+      )}
+    </>
+  );
+}
+
+function YouTubeDescription({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const long = text.length > 240 || (text.match(/\n/g)?.length ?? 0) > 3;
+  const clamped = long && !expanded;
+  return (
+    <section className="rounded-2xl border border-border bg-card p-4">
+      <h2 className="mb-2 text-sm font-semibold">About this video</h2>
+      <div className={cn("whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground", clamped && "line-clamp-4")}>
+        <LinkifiedText text={text} />
+      </div>
+      {long && (
+        <button onClick={() => setExpanded((v) => !v)} className="mt-2 text-xs font-medium text-primary hover:underline">
+          {expanded ? "Show less" : "Show more"}
+        </button>
+      )}
+    </section>
+  );
+}
+
 export function LessonView({
   courseId, handle, lesson, moduleName, progress, onProgressChange,
   index, total, hasPrev, hasNext, onPrev, onNext, autoplay, onDuration, focus,
@@ -141,6 +176,9 @@ export function LessonView({
 
       {!focus && (
         <div className="mt-6 flex flex-col gap-4">
+          {lesson.kind === "youtube" && lesson.description?.trim() && (
+            <YouTubeDescription text={lesson.description} />
+          )}
           <NotesPanel key={`notes-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} lessonTitle={lesson.title} />
           {lesson.kind === "video" && <BookmarksPanel key={`bm-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} />}
           {lesson.kind === "video" && <TranscriptPanel key={`tr-${lesson.key}`} courseId={courseId} lessonKey={lesson.key} lessonTitle={lesson.title} file={file} />}
