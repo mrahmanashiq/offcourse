@@ -41,6 +41,27 @@ function gradientFor(name: string): string {
 function initialsOf(name: string): string {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
 }
+
+// A cover that degrades gracefully: if the image fails to load (e.g. a private
+// YouTube video whose thumbnail is not on the public CDN), fall back to a
+// colored initials banner instead of a broken-image icon.
+function CourseCover({ thumbnail, grad, title }: { thumbnail: string; grad: string; title: string }) {
+  const [errored, setErrored] = useState(false);
+  if (errored) {
+    return (
+      <div className="grid h-28 place-items-center" style={{ background: grad }} aria-hidden="true">
+        <span className="text-2xl font-bold tracking-tight text-white/90">{initialsOf(title)}</span>
+      </div>
+    );
+  }
+  return (
+    <div className="relative h-28 bg-black">
+      {/* eslint-disable-next-line @next/next/no-img-element -- local data-URL or remote thumbnail */}
+      <img className="size-full object-cover" src={thumbnail} alt="" onError={() => setErrored(true)} />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60 transition-opacity group-hover:opacity-100" />
+    </div>
+  );
+}
 function timeAgo(ts: number, now: number): string {
   const s = Math.floor((now - ts) / 1000);
   if (s < 60) return "Just now";
@@ -220,11 +241,7 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
                   aria-label={`${c.title} - ${c.percent}% complete${c.pinned ? ", pinned" : ""}${c.archived ? ", archived" : ""}`}
                 >
                   {c.thumbnail ? (
-                    <div className="relative h-28 bg-black">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- local data-URL thumbnail */}
-                      <img className="size-full object-cover" src={c.thumbnail} alt="" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60 transition-opacity group-hover:opacity-100" />
-                    </div>
+                    <CourseCover thumbnail={c.thumbnail} grad={grad} title={c.title} />
                   ) : (
                     <div className="h-1.5 w-full opacity-80 transition-opacity group-hover:opacity-100" style={{ background: grad }} />
                   )}

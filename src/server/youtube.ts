@@ -8,6 +8,14 @@ import type { CourseTree, Lesson } from "@/lib/course/types";
 
 export type YtPlaylist = { id: string; title: string; count: number; thumbnail: string | null };
 
+// YouTube returns a placeholder URL (no_thumbnail.jpg) for playlists/videos
+// without a real cover; treat those as "no thumbnail" so we can fall back.
+function realThumb(url: string | undefined | null): string | undefined {
+  if (!url) return undefined;
+  if (url.includes("/img/no_thumbnail") || url.includes("/img/default")) return undefined;
+  return url;
+}
+
 async function ytApi(path: string, token: string): Promise<any> {
   const res = await fetch(`https://www.googleapis.com/youtube/v3/${path}`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -31,7 +39,7 @@ export async function listMyPlaylists(): Promise<YtPlaylist[]> {
     id: p.id,
     title: p.snippet?.title ?? "Untitled",
     count: p.contentDetails?.itemCount ?? 0,
-    thumbnail: p.snippet?.thumbnails?.medium?.url ?? null,
+    thumbnail: realThumb(p.snippet?.thumbnails?.medium?.url) ?? null,
   }));
 }
 
@@ -53,7 +61,7 @@ export async function importPlaylist(input: string): Promise<{ id: string }> {
   const pl = meta.items?.[0];
   if (!pl) throw new Error("Playlist not found or not accessible with your account.");
   const title: string = pl.snippet?.title ?? "YouTube playlist";
-  const thumbnail: string | null = pl.snippet?.thumbnails?.medium?.url ?? null;
+  const thumbnail: string | undefined = realThumb(pl.snippet?.thumbnails?.medium?.url);
 
   const lessons: Lesson[] = [];
   let pageToken = "";
@@ -67,7 +75,7 @@ export async function importPlaylist(input: string): Promise<{ id: string }> {
       const t: string | undefined = it.snippet?.title;
       if (!vid || t === "Private video" || t === "Deleted video") continue;
       const th = it.snippet?.thumbnails;
-      const thumb: string | undefined = th?.high?.url ?? th?.medium?.url ?? th?.default?.url;
+      const thumb: string | undefined = realThumb(th?.high?.url ?? th?.medium?.url ?? th?.default?.url);
       const desc: string | undefined = it.snippet?.description;
       lessons.push({
         key: vid, title: t || vid, relPath: vid, kind: "youtube", videoId: vid,
