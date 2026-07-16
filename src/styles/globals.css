@@ -149,13 +149,3 @@
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-assemble { animation: assemble 0.5s ease-out both; }
-
-/* Print only the completion certificate (isolate it from the rest of the page). */
-@media print {
-  body * { visibility: hidden !important; }
-  [data-certificate], [data-certificate] * { visibility: visible !important; }
-  [data-certificate] {
-    position: fixed; inset: 0; margin: auto; height: max-content; max-width: 640px;
-    border: 0 !important; box-shadow: none !important;
-  }
-}
