@@ -4,6 +4,7 @@ import type { SearchIndex } from "@/server/searchTypes";
 
 export type ProgressMap = Record<string, { positionSeconds: number; completed: boolean }>;
 export type BookmarkRow = { id: string; courseId: string; lessonKey: string; label: string; timestampSeconds: number };
+export type Collection = { id: string; name: string; sortOrder: number; createdAt: number };
 
 export type UpsertCourseInput = {
   id?: string;
@@ -32,6 +33,13 @@ export interface DataSource {
   setCourseTags(id: string, tags: string[]): Promise<void>;
   setCourseThumbnail(id: string, thumbnail: string | null): Promise<void>;
   saveCourseStructure(id: string, structure: CourseTree): Promise<void>;
+
+  // Collections (named groups of courses)
+  listCollections(): Promise<Collection[]>;
+  createCollection(name: string): Promise<Collection>;
+  renameCollection(id: string, name: string): Promise<void>;
+  deleteCollection(id: string): Promise<void>;
+  setCourseCollections(courseId: string, collectionIds: string[]): Promise<void>;
 
   // Progress
   getCourseProgress(courseId: string): Promise<ProgressMap>;

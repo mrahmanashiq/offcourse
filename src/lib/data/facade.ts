@@ -21,6 +21,12 @@ export const setCourseTags: DataSource["setCourseTags"] = (id, tags) => src().se
 export const setCourseThumbnail: DataSource["setCourseThumbnail"] = (id, t) => src().setCourseThumbnail(id, t);
 export const saveCourseStructure: DataSource["saveCourseStructure"] = (id, s) => src().saveCourseStructure(id, s);
 
+export const listCollections: DataSource["listCollections"] = () => src().listCollections();
+export const createCollection: DataSource["createCollection"] = (name) => src().createCollection(name);
+export const renameCollection: DataSource["renameCollection"] = (id, name) => src().renameCollection(id, name);
+export const deleteCollection: DataSource["deleteCollection"] = (id) => src().deleteCollection(id);
+export const setCourseCollections: DataSource["setCourseCollections"] = (id, ids) => src().setCourseCollections(id, ids);
+
 export const getCourseProgress: DataSource["getCourseProgress"] = (id) => src().getCourseProgress(id);
 export const saveProgress: DataSource["saveProgress"] = (c, l, s) => src().saveProgress(c, l, s);
 export const setCompleted: DataSource["setCompleted"] = (c, l, v) => src().setCompleted(c, l, v);

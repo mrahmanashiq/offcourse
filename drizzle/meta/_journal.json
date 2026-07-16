@@ -43,6 +43,13 @@
       "when": 1784041297801,
       "tag": "0005_brainy_karnak",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784229932913,
+      "tag": "0006_big_toro",
+      "breakpoints": true
     }
   ]
 }

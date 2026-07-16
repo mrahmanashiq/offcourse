@@ -41,6 +41,7 @@ export async function listCourses(): Promise<CourseSummary[]> {
       thumbnail: c.thumbnail,
       source: tree.source === "youtube" ? "youtube" : "local",
       tags: c.tags ?? [],
+      collectionIds: c.collectionIds ?? [],
       pinned: c.pinned,
       archived: c.archived,
       percent: Math.round((done / (lessonCount || 1)) * 100),

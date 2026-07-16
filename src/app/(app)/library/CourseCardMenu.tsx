@@ -1,11 +1,14 @@
 "use client";
 import { useRef, useState, useTransition } from "react";
 import {
-  Pin, PinOff, Tag, Image as ImageIcon, FolderSync, Archive, ArchiveRestore, Trash2, X,
+  Pin, PinOff, Tag, Image as ImageIcon, FolderSync, Archive, ArchiveRestore, Trash2, X, Layers, Plus, Check,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { CourseSummary } from "@/server/courseTypes";
+import type { Collection } from "@/lib/data/source";
 import {
   deleteCourse, setCoursePinned, setCourseArchived, setCourseTags, setCourseThumbnail,
+  setCourseCollections, createCollection,
 } from "@/lib/data/facade";
 import { deleteHandle, saveHandle } from "@/lib/fs/handleStore";
 import { invalidateData } from "@/lib/data/mode";
@@ -22,9 +25,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose,
 } from "@/components/ui/dialog";
 
-type OpenDialog = null | "tags" | "cover";
+type OpenDialog = null | "tags" | "cover" | "collections";
 
-export function CourseCardMenu({ course }: { course: CourseSummary }) {
+export function CourseCardMenu({ course, collections = [] }: { course: CourseSummary; collections?: Collection[] }) {
   const [pending, startTransition] = useTransition();
   const [dialog, setDialog] = useState<OpenDialog>(null);
 
@@ -77,6 +80,9 @@ export function CourseCardMenu({ course }: { course: CourseSummary }) {
             {course.pinned ? <PinOff className="size-4" /> : <Pin className="size-4" />}
             {course.pinned ? "Unpin" : "Pin to top"}
           </DropdownMenuItem>
+          <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setDialog("collections"); }}>
+            <Layers className="size-4" /> Add to collection…
+          </DropdownMenuItem>
           <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setDialog("tags"); }}>
             <Tag className="size-4" /> Edit tags…
           </DropdownMenuItem>
@@ -103,6 +109,13 @@ export function CourseCardMenu({ course }: { course: CourseSummary }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
+      <CollectionsDialog
+        open={dialog === "collections"}
+        onOpenChange={(v) => setDialog(v ? "collections" : null)}
+        course={course}
+        collections={collections}
+        onSave={(ids) => run(() => setCourseCollections(course.id, ids))}
+      />
       <TagsDialog
         open={dialog === "tags"}
         onOpenChange={(v) => setDialog(v ? "tags" : null)}
@@ -116,6 +129,80 @@ export function CourseCardMenu({ course }: { course: CourseSummary }) {
         onSave={(thumb) => run(() => setCourseThumbnail(course.id, thumb))}
       />
     </>
+  );
+}
+
+function CollectionsDialog({ open, onOpenChange, course, collections, onSave }: {
+  open: boolean; onOpenChange: (v: boolean) => void; course: CourseSummary; collections: Collection[]; onSave: (ids: string[]) => void;
+}) {
+  const [selected, setSelected] = useState<Set<string>>(new Set(course.collectionIds));
+  const [localCols, setLocalCols] = useState<Collection[]>(collections);
+  const [newName, setNewName] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  function handleOpenChange(v: boolean) {
+    if (v) { setSelected(new Set(course.collectionIds)); setLocalCols(collections); setNewName(""); }
+    onOpenChange(v);
+  }
+  function toggle(id: string) {
+    setSelected((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  }
+  async function addNew() {
+    const name = newName.trim();
+    if (!name || creating) return;
+    setCreating(true);
+    try {
+      const col = await createCollection(name);
+      setLocalCols((cs) => [...cs, col]);
+      setSelected((s) => new Set(s).add(col.id));
+      setNewName("");
+    } finally { setCreating(false); }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add “{course.title}” to collections</DialogTitle>
+          <DialogDescription>Group this course. A course can be in several collections.</DialogDescription>
+        </DialogHeader>
+        <div className="flex max-h-64 flex-col gap-1 overflow-y-auto">
+          {localCols.length === 0 && <p className="text-sm text-muted-foreground">No collections yet. Create one below.</p>}
+          {localCols.map((col) => {
+            const on = selected.has(col.id);
+            return (
+              <button
+                key={col.id}
+                type="button"
+                onClick={() => toggle(col.id)}
+                aria-pressed={on}
+                className="flex items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-muted"
+              >
+                <span className={cn("grid size-4 shrink-0 place-items-center rounded border", on ? "border-primary bg-primary text-primary-foreground" : "border-border")}>
+                  {on && <Check className="size-3" />}
+                </span>
+                {col.name}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addNew(); } }}
+            placeholder="New collection…"
+            className="h-9 flex-1 rounded-md border border-border bg-transparent px-3 text-sm outline-none focus:border-primary"
+            aria-label="New collection name"
+          />
+          <Button variant="outline" onClick={addNew} disabled={!newName.trim() || creating} className="shrink-0"><Plus className="size-4" /> Add</Button>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+          <DialogClose asChild><Button onClick={() => onSave([...selected])}>Save</Button></DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

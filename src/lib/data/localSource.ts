@@ -3,13 +3,14 @@ import type { CourseTree } from "@/lib/course/types";
 import type { CourseSummary } from "@/server/courseTypes";
 import type { SearchIndex } from "@/server/searchTypes";
 import { putLocalNoteImage, getLocalNoteImage } from "@/lib/player/noteImages";
-import type { DataSource, ProgressMap, BookmarkRow, UpsertCourseInput } from "./source";
+import type { DataSource, ProgressMap, BookmarkRow, UpsertCourseInput, Collection } from "./source";
 
 type CourseRec = {
   id: string; title: string; thumbnail: string | null; folderName: string;
-  structureJson: CourseTree; tags: string[]; pinned: boolean; archived: boolean;
+  structureJson: CourseTree; tags: string[]; collectionIds?: string[]; pinned: boolean; archived: boolean;
   lastOpenedAt: number | null; createdAt: number;
 };
+type CollectionRec = { id: string; name: string; sortOrder: number; createdAt: number };
 type ProgRec = { key: string; courseId: string; lessonKey: string; positionSeconds: number; completed: boolean; completedAt: number | null; durationSeconds?: number };
 type NoteRec = { key: string; courseId: string; lessonKey: string; content: string; tags: string[] };
 type BmRec = { id: string; courseId: string; lessonKey: string; label: string; timestampSeconds: number; createdAt: number };
@@ -22,12 +23,13 @@ interface LocalDB extends DBSchema {
   notes: { key: string; value: NoteRec };
   bookmarks: { key: string; value: BmRec };
   transcripts: { key: string; value: TranscriptRec };
+  collections: { key: string; value: CollectionRec };
 }
 
 let dbp: Promise<IDBPDatabase<LocalDB>> | null = null;
 function getDB() {
   if (!dbp) {
-    dbp = openDB<LocalDB>("offcourse-local", 2, {
+    dbp = openDB<LocalDB>("offcourse-local", 3, {
       upgrade(db, oldVersion) {
         if (oldVersion < 1) {
           db.createObjectStore("courses", { keyPath: "id" });
@@ -37,6 +39,9 @@ function getDB() {
         }
         if (oldVersion < 2) {
           db.createObjectStore("transcripts", { keyPath: "key" });
+        }
+        if (oldVersion < 3) {
+          db.createObjectStore("collections", { keyPath: "id" });
         }
       },
     });
@@ -69,6 +74,7 @@ export const localSource: DataSource = {
         thumbnail: c.thumbnail,
         source: c.structureJson.source === "youtube" ? "youtube" : "local",
         tags: c.tags ?? [],
+        collectionIds: c.collectionIds ?? [],
         pinned: c.pinned,
         archived: c.archived,
         percent: Math.round((done / (lessonCount || 1)) * 100),
@@ -96,7 +102,7 @@ export const localSource: DataSource = {
     const id = input.id ?? uuid();
     await db.put("courses", {
       id, title: input.title, thumbnail: input.thumbnail, folderName: input.folderName,
-      structureJson: input.structure, tags: [], pinned: false, archived: false,
+      structureJson: input.structure, tags: [], collectionIds: [], pinned: false, archived: false,
       lastOpenedAt: null, createdAt: Date.now(),
     });
     return { id };
@@ -139,6 +145,36 @@ export const localSource: DataSource = {
   },
   async saveCourseStructure(id: string, structure: CourseTree): Promise<void> {
     await patchCourse(id, { structureJson: structure });
+  },
+
+  async listCollections(): Promise<Collection[]> {
+    const db = await getDB();
+    return (await db.getAll("collections"))
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt - b.createdAt)
+      .map((c) => ({ id: c.id, name: c.name, sortOrder: c.sortOrder, createdAt: c.createdAt }));
+  },
+  async createCollection(name: string): Promise<Collection> {
+    const db = await getDB();
+    const existing = await db.getAll("collections");
+    const rec: CollectionRec = { id: uuid(), name: name.trim() || "Untitled", sortOrder: existing.length, createdAt: Date.now() };
+    await db.put("collections", rec);
+    return rec;
+  },
+  async renameCollection(id: string, name: string): Promise<void> {
+    const db = await getDB();
+    const c = await db.get("collections", id);
+    if (c) await db.put("collections", { ...c, name: name.trim() || "Untitled" });
+  },
+  async deleteCollection(id: string): Promise<void> {
+    const db = await getDB();
+    await db.delete("collections", id);
+    const cs = await db.getAll("courses");
+    await Promise.all(cs
+      .filter((c) => (c.collectionIds ?? []).includes(id))
+      .map((c) => db.put("courses", { ...c, collectionIds: (c.collectionIds ?? []).filter((x) => x !== id) })));
+  },
+  async setCourseCollections(courseId: string, collectionIds: string[]): Promise<void> {
+    await patchCourse(courseId, { collectionIds: Array.from(new Set(collectionIds.filter(Boolean))) });
   },
 
   async getCourseProgress(courseId: string): Promise<ProgressMap> {

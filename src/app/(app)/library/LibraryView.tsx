@@ -2,9 +2,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TrendingUp } from "lucide-react";
-import { listCourses } from "@/lib/data/facade";
+import { listCourses, listCollections } from "@/lib/data/facade";
 import { DATA_CHANGED_EVENT } from "@/lib/data/mode";
 import type { CourseSummary } from "@/server/courseTypes";
+import type { Collection } from "@/lib/data/source";
 import { AddCourseButton } from "./AddCourseButton";
 import { LibraryGrid } from "./LibraryGrid";
 import { UnsupportedBrowser } from "@/components/UnsupportedBrowser";
@@ -20,10 +21,14 @@ type SessionUser = { name: string | null; email: string | null; image: string | 
 
 export function LibraryView({ isLocal, owner, user }: { isLocal: boolean; owner: string | null; user: SessionUser | null }) {
   const [courses, setCourses] = useState<CourseSummary[] | null>(null);
+  const [collections, setCollections] = useState<Collection[]>([]);
 
   useEffect(() => {
     let cancelled = false;
-    const load = () => listCourses().then((c) => { if (!cancelled) setCourses(c); }).catch(() => { if (!cancelled) setCourses([]); });
+    const load = () => {
+      listCourses().then((c) => { if (!cancelled) setCourses(c); }).catch(() => { if (!cancelled) setCourses([]); });
+      listCollections().then((c) => { if (!cancelled) setCollections(c); }).catch(() => { if (!cancelled) setCollections([]); });
+    };
     load();
     window.addEventListener(DATA_CHANGED_EVENT, load);
     return () => { cancelled = true; window.removeEventListener(DATA_CHANGED_EVENT, load); };
@@ -58,7 +63,7 @@ export function LibraryView({ isLocal, owner, user }: { isLocal: boolean; owner:
           ))}
         </div>
       ) : (
-        <LibraryGrid courses={courses} />
+        <LibraryGrid courses={courses} collections={collections} />
       )}
     </main>
   );

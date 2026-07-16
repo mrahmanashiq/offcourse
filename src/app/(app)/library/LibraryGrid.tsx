@@ -11,7 +11,9 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import { CourseCardMenu } from "./CourseCardMenu";
+import { CollectionsBar } from "./CollectionsBar";
 import { AddCourseButton } from "./AddCourseButton";
+import type { Collection } from "@/lib/data/source";
 
 const PAGE_SIZE = 12;
 
@@ -72,9 +74,10 @@ function timeAgo(ts: number, now: number): string {
   return `${Math.floor(s / 2592000)}mo ago`;
 }
 
-export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
+export function LibraryGrid({ courses, collections = [] }: { courses: CourseSummary[]; collections?: Collection[] }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("recent");
+  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [showArchived, setShowArchived] = useState(false);
   const [now, setNow] = useState<number | null>(null);
@@ -92,6 +95,7 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
     const filtered = courses.filter((c) => {
       if (c.archived && !showArchived) return false;
       if (q && !c.title.toLowerCase().includes(q)) return false;
+      if (selectedCollection && !c.collectionIds.includes(selectedCollection)) return false;
       if (selectedTags.size && !c.tags.some((t) => selectedTags.has(t))) return false;
       return true;
     });
@@ -104,13 +108,17 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
         default: return (b.lastOpenedAt ?? b.createdAt) - (a.lastOpenedAt ?? a.createdAt);
       }
     });
-  }, [courses, query, sort, selectedTags, showArchived]);
+  }, [courses, query, sort, selectedCollection, selectedTags, showArchived]);
 
   const totalPages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
   const pageItems = useMemo(() => shown.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [shown, page]);
 
   // Filters changing resets to page 1; clamp if the current page fell out of range.
-  useEffect(() => { setPage(1); }, [query, sort, selectedTags, showArchived]);
+  useEffect(() => { setPage(1); }, [query, sort, selectedCollection, selectedTags, showArchived]);
+  // Drop the collection filter if that collection was deleted.
+  useEffect(() => {
+    if (selectedCollection && !collections.some((c) => c.id === selectedCollection)) setSelectedCollection(null);
+  }, [collections, selectedCollection]);
   useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
 
   function toggleTag(t: string) {
@@ -161,6 +169,8 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
         </div>
         <SortMenu value={sort} onChange={setSort} />
       </div>
+
+      <CollectionsBar collections={collections} courses={courses} selectedId={selectedCollection} onSelect={setSelectedCollection} />
 
       {(allTags.length > 0 || archivedCount > 0) && (
         <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -305,7 +315,7 @@ export function LibraryGrid({ courses }: { courses: CourseSummary[] }) {
                   </div>
                 )}
                 <div className="absolute right-2 top-2 z-[2]">
-                  <CourseCardMenu course={c} />
+                  <CourseCardMenu course={c} collections={collections} />
                 </div>
               </article>
             );

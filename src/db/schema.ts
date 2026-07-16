@@ -41,9 +41,20 @@ export const courses = pgTable("courses", {
   folderName: text("folderName").notNull(),
   structureJson: jsonb("structureJson").notNull(),
   tags: jsonb("tags").$type<string[]>().default([]).notNull(),
+  collectionIds: jsonb("collectionIds").$type<string[]>().default([]).notNull(),
   pinned: boolean("pinned").default(false).notNull(),
   archived: boolean("archived").default(false).notNull(),
   lastOpenedAt: timestamp("lastOpenedAt", { mode: "date" }),
+  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+});
+// Named groups of courses ("Frontend", "Interview prep"). Membership is stored
+// as an id array on each course (courses.collectionIds), mirroring tags; this
+// table holds the names/order so a collection exists even when empty.
+export const collections = pgTable("collections", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  sortOrder: integer("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
 });
 export const lessonProgress = pgTable("lesson_progress", {

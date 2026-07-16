@@ -4,6 +4,7 @@ export type CourseSummary = {
   thumbnail: string | null;
   source: "local" | "youtube";
   tags: string[];
+  collectionIds: string[];
   pinned: boolean;
   archived: boolean;
   percent: number;
