@@ -5,7 +5,7 @@ import { DefaultVideoLayout, DefaultAudioLayout, defaultLayoutIcons } from "@vid
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import "@vidstack/react/player/styles/default/layouts/audio.css";
-import { Repeat, Camera, Headphones, Play, Pause, ExternalLink } from "lucide-react";
+import { Repeat, Camera, Headphones, Play, Pause, ExternalLink, VideoOff } from "lucide-react";
 import { shouldAutoComplete } from "@/lib/player/completion";
 import { formatTimestamp } from "@/lib/formatTimestamp";
 import { cn } from "@/lib/utils";
@@ -42,12 +42,13 @@ export function VideoPlayer({ src, youtubeId, audio, mimeType, tracks = [], star
   const [loop, setLoop] = useState<{ a: number | null; b: number | null }>({ a: null, b: null });
   const [audioOnly, setAudioOnly] = useState(false);
   const [paused, setPaused] = useState(true);
+  const [ytError, setYtError] = useState(false);
 
   useEffect(() => {
     completed.current = false; lastSave.current = 0;
     loopRef.current = { a: null, b: null };
-    setLoop({ a: null, b: null }); setAudioOnly(false);
-  }, [src]);
+    setLoop({ a: null, b: null }); setAudioOnly(false); setYtError(false);
+  }, [src, youtubeId]);
 
   // Bookmarks / note-timestamps jump to a time via this event.
   useEffect(() => {
@@ -159,6 +160,7 @@ export function VideoPlayer({ src, youtubeId, audio, mimeType, tracks = [], star
           onPlay={onPlay}
           onEnded={onComplete}
           onPause={onPause}
+          onError={() => { if (youtubeId) setYtError(true); }}
         >
           <MediaProvider>
             {tracks.map((t, i) => (
@@ -181,6 +183,27 @@ export function VideoPlayer({ src, youtubeId, audio, mimeType, tracks = [], star
                 Show video
               </button>
             </div>
+          </div>
+        )}
+
+        {/* A private / embed-disabled YouTube video shows YouTube's own error
+            screen with a perpetual spinner inside the (cross-origin) iframe,
+            which we can't style. Cover it with our own clean panel instead. */}
+        {youtubeId && ytError && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-card px-6 text-center">
+            <VideoOff className="size-9 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">This video can&rsquo;t be embedded</p>
+              <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">It is private or has embedding turned off. Open it on YouTube, where you are signed in.</p>
+            </div>
+            <a
+              href={`https://www.youtube.com/watch?v=${youtubeId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              <ExternalLink className="size-4" /> Watch on YouTube
+            </a>
           </div>
         )}
       </div>
